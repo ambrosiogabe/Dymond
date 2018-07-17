@@ -1,0 +1,8 @@
+String my_string;
+Int my_int;
+Decimal my_decimal;
+Decimal other;
+
+my_int = 20;
+my_decimal = 3.14;
+other = my_int // my_decimal;
