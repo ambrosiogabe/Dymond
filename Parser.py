@@ -47,42 +47,111 @@ class Parser(object):
 
 
     def program(self):
-        # program : block
+        # program : Declare*
+        #         | Statement* EOF
         self.eat(TokenType.BOF)
-        node = self.block()
+
+        children = []
+        while(self.current_token.get_type() != TokenType.EOF):
+            if(self.current_token.get_type() in TokenType.ALL_TYPES):
+                children.append(self.variable_declarations())
+
+            if(self.current_token.get_type() == TokenType.FUNC):
+                children.append(self.function_declaration())
+
+            if(self.current_token.get_type() != TokenType.EOF):
+                children.append(self.compound_statement())
+
         self.eat(TokenType.EOF)
 
-        program = Program(node)
+        program = Program(children)
         return program
 
 
-    def block(self):
-        # block : declarations compound_statement
-        declaration_nodes = self.declarations()
-        compound_statement = self.compound_statement()
-        node = Block(declaration_nodes, compound_statement)
-        return node
+    def func_block(self):
+        """ block : LEFT_BRACE declarations*
+                  | compound_statement* RIGHT_BRACE
+        """
 
-    def declarations(self):
-        # declarations : variable(SEMI_COLON)+
-        types = (TokenType.INTEGER_TYPE, TokenType.DECIMAL_TYPE, TokenType.STRING_TYPE)
-        declarations = []
+        self.eat(TokenType.LEFT_BRACE)
+        children = []
 
-        while(self.current_token.get_type() in types):
-            type = self.current_token.get_type()
-            type_node = Type(self.current_token)
+        while(self.current_token.get_type() != TokenType.RIGHT_BRACE):
+            if(self.current_token.get_type() in TokenType.ALL_TYPES):
+                children.append(self.variable_declarations())
+
+            if(self.current_token.get_type() != TokenType.RIGHT_BRACE):
+                children.append(self.compound_statement())
+
+        self.eat(TokenType.RIGHT_BRACE)
+
+        return children
+
+    def variable_declarations(self):
+        """declaration : variable(SEMI_COLON)
+        """
+
+        type = self.current_token.get_type()
+        type_node = Type(self.current_token)
+        self.eat(self.current_token.get_type())
+
+        var_decl = Variable(self.variable_declaration(type_node))
+
+        return var_decl
+
+    def function_declaration(self):
+        """ function_declarations : function
+                                  | (FUNC ID FUNC_VALUES BLOCK)
+        """
+        # Declaring function
+        self.eat(TokenType.FUNC)
+
+        # Return type of the current function
+        return_type = self.current_token.get_type()
+
+        if(return_type in TokenType.ALL_TYPES):
             self.eat(self.current_token.get_type())
 
-            if(not self.current_token.get_type() == TokenType.DOT):
-                var_decl = self.variable_declaration(type_node)
-                declarations.extend(var_decl)
+        # Function identifier
+        func_name = self.current_token.get_value()
+        self.eat(TokenType.IDENTIFIER)
 
-        return declarations
+        # Function parameters
+        parameters = []
+        self.eat(TokenType.LEFT_PAREN)
+        while(self.current_token.get_type() != TokenType.RIGHT_PAREN):
+            type = self.current_token.get_type()
+            type_node = Type(self.current_token)
+
+            self.eat(self.current_token.get_type())
+
+            param_decl = self.parameter_declaration(type_node)
+            parameters.extend(param_decl)
+
+            if(self.current_token.get_type() != TokenType.RIGHT_PAREN):
+                    self.eat(TokenType.COMMA)
+
+        self.eat(TokenType.RIGHT_PAREN)
+        children = self.func_block()
+        func_decl = FuncDecl(func_name, return_type, parameters, children)
+
+        return func_decl
+
+    def parameter_declaration(self, type_node):
+        var_node = Identifier(self.current_token)
+        self.eat(TokenType.IDENTIFIER)
+
+        var_decl = [VarDecl(var_node, type_node)]
+
+        return var_decl
 
     def variable_declaration(self, type_node):
-        # variable_declaration : type_spec ID SEMI_COLON
+        # variable_declaration : type_spec ID,ID,* SEMI_COLON
         var_nodes = [Identifier(self.current_token)]
         self.eat(TokenType.IDENTIFIER)
+
+        #if(self.current_token.get_type() == TokenType.EQUAL): Figure out how to make the assignment operator work with this
+
 
         while(self.current_token.get_type() == TokenType.COMMA):
             self.eat(TokenType.COMMA)

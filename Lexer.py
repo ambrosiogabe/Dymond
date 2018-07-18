@@ -19,7 +19,7 @@ class Lexer:
             tokens.append(token)
             token = self.next_token()
 
-        eof = Token(TokenType.EOF, TokenType.EOF, self.cur_line + 1, 0)
+        eof = Token(TokenType.EOF, TokenType.EOF, self.cur_line + 2, 0)
         tokens.append(eof)
         return tokens
 

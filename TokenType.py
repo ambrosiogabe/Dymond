@@ -73,6 +73,7 @@ class TokenType:
     INTEGER_TYPE = "Int"
     DECIMAL_TYPE = "Decimal"
     STRING_TYPE = "String"
+    ALL_TYPES = ("Int", "Decimal", "String")
 
     # Delimiters
     COLON = ":"

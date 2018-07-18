@@ -13,7 +13,7 @@ class SymbolTable(object):
         self.define(BuiltInTypeSymbol(TokenType.DECIMAL_TYPE))
 
     def __str__(self):
-        s = "Symbols: {symbols}".format(
+        s = "Symbol Table Contents\nSymbols: {symbols}".format(
             symbols = [value for value in self._symbols.values()]
         )
         return s
@@ -33,13 +33,12 @@ class SymbolTableBuilder(NodeVisitor):
     def __init__(self):
         self.symtab = SymbolTable()
 
-    def visit_Block(self, node):
-        for declaration in node.declarations:
-            self.visit(declaration)
-        self.visit(node.compound_statement)
-
     def visit_Program(self, node):
-        self.visit(node.block)
+        if(len(node.children) == 0):
+            pass
+
+        for child in node.children:
+            self.visit(child)
 
     def visit_BinOp(self, node):
         self.visit(node.left)
@@ -61,12 +60,23 @@ class SymbolTableBuilder(NodeVisitor):
     def visit_EmptyProgram(self, node):
         pass
 
+    def visit_FuncDecl(self, node):
+        for parameter in node.parameters:
+            self.visit(parameter)
+
+        for child in node.children:
+            self.visit(child)
+
     def visit_VarDecl(self, node):
         type_name = node.type_node.value
         type_symbol = self.symtab.lookup(type_name)
         var_name = node.var_node.value
         var_symbol = VarSymbol(var_name, type_symbol)
         self.symtab.define(var_symbol)
+
+    def visit_Variable(self, node):
+        for var in node.var_decls:
+            self.visit(var)
 
     def visit_Assign(self, node):
         var_name = node.left.value

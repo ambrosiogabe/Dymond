@@ -1,8 +1,18 @@
 String my_string;
 Int my_int;
-Decimal my_decimal;
+Decimal my_decimal, my_decimal_number_two;
 Decimal other;
 
 my_int = 20;
 my_decimal = 3.14;
 other = my_int // my_decimal;
+my_decimal_number_two = 5.231;
+
+Int my_other_int;
+
+my_other_int = 203;
+
+func Int my_func(Int param_1, Int param_2) {
+  String my_func_string;
+  my_decimal_number_two = 2.11
+}

@@ -42,7 +42,7 @@ def main():
     parser = Parser(Lexer(open("input.txt", "r").read()))
     interpreter = Interpreter(parser)
     result = interpreter.interpret()
-    print(interpreter.GLOBAL_SCOPE)
+    interpreter.print_global_scope()
 
 if __name__ == "__main__":
     main()

@@ -8,6 +8,10 @@ class Interpreter(NodeVisitor):
         self.parser = parser
         self.GLOBAL_SCOPE = {}
 
+    def print_global_scope(self):
+        for k in self.GLOBAL_SCOPE:
+            print(str(k) + " = " + str(self.GLOBAL_SCOPE[k]))
+
     def visit_BinOp(self, node):
         left = self.visit(node.left)
         right = self.visit(node.right)
@@ -44,15 +48,18 @@ class Interpreter(NodeVisitor):
             self.visit(child)
 
     def visit_Program(self, node):
-        self.visit(node.block)
+        if(len(node.children) == 0):
+            self.visit_EmptyProgram()
 
-    def visit_Block(self, node):
-        for declaration in node.declarations:
-            self.visit(declaration)
-        self.visit(node.compound_statement)
+        for child in node.children:
+            self.visit(child)
 
     def visit_VarDecl(self, node):
         pass
+
+    def visit_Variable(self, node):
+        for var_decl in node.var_decls:
+            self.visit(var_decl)
 
     def visit_Type(self, node):
         pass
@@ -72,9 +79,17 @@ class Interpreter(NodeVisitor):
     def visit_EmptyProgram(self, node):
         return
 
+    def visit_FuncDecl(self, node):
+        for child in node.children:
+            self.visit(child)
+
     def interpret(self):
         tree = self.parser.parse()
         symtab_builder = SymbolTableBuilder()
 
         symtab_builder.visit(tree)
+        print("\n\n\n")
+        print(symtab_builder.symtab)
+
+        print("\nRun-time GLOBAL_MEMORY contents:")
         return self.visit(tree)

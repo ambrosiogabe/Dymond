@@ -57,8 +57,8 @@ class UnaryOperator(AST):
 
 # These are the program properties
 class Program(AST):
-    def __init__(self, block):
-        self.block = block
+    def __init__(self, children):
+        self.children = children
 
 class Block(AST):
     def __init__(self, declarations, compound_statement):
@@ -70,7 +70,23 @@ class VarDecl(AST):
         self.var_node = var_node
         self.type_node = type_node
 
+class Variable(AST):
+    def __init__(self, var_decls):
+        self.var_decls = var_decls
+
 class Type(AST):
     def __init__(self, token):
         self.token = token
         self.value = token.get_value()
+
+class FuncBlock(AST):
+    def __init__(self, children):
+        self.children = children
+
+class FuncDecl(AST):
+    # func_values_node contains return type, parameters
+    def __init__(self, func_name, return_type, parameters, children):
+        self.func_name = func_name
+        self.return_type = return_type
+        self.parameters = parameters
+        self.children = children
