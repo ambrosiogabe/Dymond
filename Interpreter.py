@@ -1,6 +1,5 @@
 from TokenType import TokenType
 from Token import Token
-from SymbolTable import SymbolTableBuilder
 from AST_Nodes import NodeVisitor
 
 class Interpreter(NodeVisitor):
@@ -9,6 +8,10 @@ class Interpreter(NodeVisitor):
         self.GLOBAL_SCOPE = {}
 
     def print_global_scope(self):
+        header = "Run-time GLOBAL_MEMORY contents:"
+        lines = "_" * len(header)
+        print(header + "\n" + lines)
+
         for k in self.GLOBAL_SCOPE:
             print(str(k) + " = " + str(self.GLOBAL_SCOPE[k]))
 
@@ -85,11 +88,5 @@ class Interpreter(NodeVisitor):
 
     def interpret(self):
         tree = self.parser.parse()
-        symtab_builder = SymbolTableBuilder()
 
-        symtab_builder.visit(tree)
-        print("\n\n\n")
-        print(symtab_builder.symtab)
-
-        print("\nRun-time GLOBAL_MEMORY contents:")
         return self.visit(tree)

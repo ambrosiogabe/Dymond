@@ -1,6 +1,41 @@
 from TokenType import TokenType
-from AST_Nodes import NodeVisitor, VarSymbol,BuiltInTypeSymbol
+from AST_Nodes import NodeVisitor
 from collections import OrderedDict
+
+class Symbol(object):
+    def __init__(self, name, type=None):
+        self.name = name
+        self.type = type
+        #self.category = category
+
+class BuiltInTypeSymbol(Symbol):
+    def __init__(self, name):
+        super(BuiltInTypeSymbol, self).__init__(name)
+
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        return "<{class_name}(name='{name}')>".format(
+        class_name = self.__class__.__name__,
+        name = self.name
+        )
+
+class VarSymbol(Symbol):
+    def __init__(self, name, type):
+        super(VarSymbol, self).__init__(name, type)
+
+    def __str__(self):
+        return "<{class_name}(name='{name}', type='{type}')>".format(
+        class_name = self.__class__.__name__,
+        name=self.name,
+        type=self.type
+        )
+
+    __repr__ = __str__
+
+
+
 
 class SymbolTable(object):
     def __init__(self):
@@ -13,9 +48,14 @@ class SymbolTable(object):
         self.define(BuiltInTypeSymbol(TokenType.DECIMAL_TYPE))
 
     def __str__(self):
-        s = "Symbol Table Contents\nSymbols: {symbols}".format(
-            symbols = [value for value in self._symbols.values()]
+        symtab_header = "Symbol table contents"
+        lines = ['\n', symtab_header, '_' * len(symtab_header)]
+        lines.extend(
+            ("%8s: %r" % (key, value))
+            for key, value in self._symbols.items()
         )
+        lines.append('\n')
+        s = '\n'.join(lines)
         return s
 
     __repr__ = __str__
@@ -29,66 +69,6 @@ class SymbolTable(object):
         symbol = self._symbols.get(name)
         return symbol
 
-class SymbolTableBuilder(NodeVisitor):
-    def __init__(self):
-        self.symtab = SymbolTable()
-
-    def visit_Program(self, node):
-        if(len(node.children) == 0):
-            pass
-
-        for child in node.children:
-            self.visit(child)
-
-    def visit_BinOp(self, node):
-        self.visit(node.left)
-        self.visit(node.right)
-
-    def visit_Integer(self, node):
-        pass
-
-    def visit_Float(self, node):
-        pass
-
-    def visit_UnaryOp(self, node):
-        self.visit(node.expr)
-
-    def visit_CompoundStatement(self, node):
-        for child in node.children:
-            self.visit(child)
-
-    def visit_EmptyProgram(self, node):
-        pass
-
-    def visit_FuncDecl(self, node):
-        for parameter in node.parameters:
-            self.visit(parameter)
-
-        for child in node.children:
-            self.visit(child)
-
-    def visit_VarDecl(self, node):
-        type_name = node.type_node.value
-        type_symbol = self.symtab.lookup(type_name)
-        var_name = node.var_node.value
-        var_symbol = VarSymbol(var_name, type_symbol)
-        self.symtab.define(var_symbol)
-
-    def visit_Variable(self, node):
-        for var in node.var_decls:
-            self.visit(var)
-
-    def visit_Assign(self, node):
-        var_name = node.left.value
-        var_symbol = self.symtab.lookup(var_name)
-        if(var_symbol is None):
-            raise NameError(repr(var_name) + " is not found on line: " + str(node.token.get_line()))
-
-        self.visit(node.right)
-
-    def visit_Identifier(self, node):
-        var_name = node.value
-        var_symbol = self.symtab.lookup(var_name)
-
-        if(var_symbol is None):
-            raise NameError(repr(var_name) + " is not found on line: " + str(node.token.get_line()))
+    def insert(self, symbol):
+        print("Insert: %s" % symbol.name)
+        self._symbols[symbol.name] = symbol

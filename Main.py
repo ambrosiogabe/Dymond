@@ -2,6 +2,7 @@ from Lexer import Lexer
 from Token import Token
 from Parser import Parser
 from Interpreter import Interpreter
+from SemanticAnalyzer import SemanticAnalyzer
 from sys import argv
 import os
 
@@ -39,9 +40,17 @@ def main():
             list += "', "
     print(list)
 
-    parser = Parser(Lexer(open("input.txt", "r").read()))
-    interpreter = Interpreter(parser)
+    lexer = Lexer(open("input.txt", "r").read())
+    se_parser = Parser(lexer)
+    semantic_analyzer = SemanticAnalyzer(se_parser)
+    semantic_analyzer.analyze()
+
+    lexer = Lexer(open("input.txt", "r").read())
+    in_parser = Parser(lexer)
+    interpreter = Interpreter(in_parser)
     result = interpreter.interpret()
+
+    print(semantic_analyzer.symtab)
     interpreter.print_global_scope()
 
 if __name__ == "__main__":
