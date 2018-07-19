@@ -12,7 +12,8 @@ class SemanticAnalyzer(NodeVisitor):
         print("ENTER scope: global")
         global_scope = SymbolTable(
             scope_name="global",
-            scope_level=1
+            scope_level=1,
+            enclosing_scope=self.current_scope # None
         )
         self.current_scope = global_scope
 
@@ -23,6 +24,8 @@ class SemanticAnalyzer(NodeVisitor):
             self.visit(child)
 
         print(global_scope)
+
+        self.current_scope = self.current_scope.enclosing_scope
         print("LEAVE scope: global")
 
     def visit_BinOp(self, node):
@@ -46,10 +49,6 @@ class SemanticAnalyzer(NodeVisitor):
         pass
 
     def visit_FuncDecl(self, node):
-        # Initial scope is the scope you are coming from
-        initial_scope = self.current_scope
-
-
         func_name = node.func_name
         func_symbol = FunctionSymbol(func_name)
         self.current_scope.insert(func_symbol)
@@ -57,7 +56,8 @@ class SemanticAnalyzer(NodeVisitor):
         print("ENTER scope: %s" % func_name)
         function_scope = SymbolTable(
             scope_name=func_name,
-            scope_level=2
+            scope_level=self.current_scope.scope_level + 1,
+            enclosing_scope=self.current_scope
         )
         self.current_scope = function_scope
 
@@ -69,7 +69,7 @@ class SemanticAnalyzer(NodeVisitor):
 
         print(function_scope)
         print("LEAVE scope: %s" % func_name)
-        self.current_scope = initial_scope
+        self.current_scope = self.current_scope.enclosing_scope
 
     def visit_VarDecl(self, node):
         type_name = node.type_node.value

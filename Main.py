@@ -50,7 +50,5 @@ def main():
     interpreter = Interpreter(in_parser)
     result = interpreter.interpret()
 
-    interpreter.print_global_scope()
-
 if __name__ == "__main__":
     main()

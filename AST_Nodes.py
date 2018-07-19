@@ -76,6 +76,4 @@ class FuncDecl(AST):
         self.func_name = func_name
         self.return_type = return_type
         self.parameters = parameters
-        for param in parameters:
-            print(param)
         self.children = children

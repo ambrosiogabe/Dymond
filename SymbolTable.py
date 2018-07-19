@@ -51,11 +51,14 @@ class FunctionSymbol(Symbol):
 
 
 class SymbolTable(object):
-    def __init__(self, scope_name, scope_level):
+    def __init__(self, scope_name, scope_level, enclosing_scope=None):
         self._symbols = OrderedDict()
         self.scope_name = scope_name
         self.scope_level = scope_level
-        self._init_builtins()
+        self.enclosing_scope = enclosing_scope
+
+        if(enclosing_scope is None):
+            self._init_builtins()
 
     def _init_builtins(self):
         self.define(BuiltInTypeSymbol(TokenType.INTEGER_TYPE))
@@ -67,7 +70,10 @@ class SymbolTable(object):
         lines = ['\n', symtab_header, '=' * len(symtab_header)]
         for header_name, header_value in (
             ('Scope name', self.scope_name),
-            ('Scope level', self.scope_level)
+            ('Scope level', self.scope_level),
+            ('Enclosing scope',
+                self.enclosing_scope.scope_name if self.enclosing_scope else None
+            )
         ):
             lines.append("%-15s: %s" % (header_name, header_value))
         h2 = "Scope (Scoped symbol table) contents"
@@ -87,9 +93,14 @@ class SymbolTable(object):
         self._symbols[symbol.name] = symbol
 
     def lookup(self, name):
-        print("Lookup: %s" % name)
+        print("Lookup: %s. (Scope name: %s)" % (name, self.scope_name))
         symbol = self._symbols.get(name)
-        return symbol
+
+        if(symbol is not None):
+            return symbol
+
+        if(self.enclosing_scope is not None):
+            return self.enclosing_scope.lookup(name)
 
     def insert(self, symbol):
         print("Insert: %s" % symbol.name)

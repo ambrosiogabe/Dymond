@@ -7,14 +7,6 @@ class Interpreter(NodeVisitor):
         self.parser = parser
         self.GLOBAL_SCOPE = {}
 
-    def print_global_scope(self):
-        header = "Run-time GLOBAL_MEMORY contents:"
-        lines = "_" * len(header)
-        print(header + "\n" + lines)
-
-        for k in self.GLOBAL_SCOPE:
-            print(str(k) + " = " + str(self.GLOBAL_SCOPE[k]))
-
     def visit_BinOp(self, node):
         left = self.visit(node.left)
         right = self.visit(node.right)

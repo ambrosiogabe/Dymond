@@ -7,7 +7,6 @@ x = 3.14;
 b = a // x;
 
 Int z;
-
 z = 203;
 
 func Int my_func(Int p1, Int p2) {
@@ -15,6 +14,10 @@ func Int my_func(Int p1, Int p2) {
   Int scope = 5;
 }
 
+func String my_other_func(String str3, String str4) {
+  String local_str;
+}
+
 String new_string;
 Int c, d, e = 1, 2, 3;
-e = c + d + e;/* + scope;*/
+e = c + d + e;
