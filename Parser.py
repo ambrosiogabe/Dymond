@@ -39,11 +39,11 @@ class Parser(object):
             self.current_token = self.lexer.next_token()
         else:
             if(type(token_type).__name__ != "TokenType"):
-                raise SyntaxError("Invalid syntax: " + "Expected: " + token_type + " Instead got: " + self.current_token.get_value() + \
-                 " on line: " + str(self.current_token.get_line()))
+                raise SyntaxError("Invalid syntax: " + "Expected: '" + token_type + "' Instead got: '" + self.current_token.get_value() + \
+                 "' on line: " + str(self.current_token.get_line()))
 
-            raise SyntaxError("Invalid syntax: " + "Expected: " + token_type.get_value() + " Instead got: " + self.current_token.get_value() + \
-             " on line: " + str(self.current_token.get_line()))
+            raise SyntaxError("Invalid syntax: " + "Expected: '" + token_type.get_value() + "' Instead got: '" + self.current_token.get_value() + \
+             "' on line: " + str(self.current_token.get_line()))
 
 
     def program(self):
@@ -147,16 +147,26 @@ class Parser(object):
 
     def variable_declaration(self, type_node):
         # variable_declaration : type_spec ID,ID,* SEMI_COLON
+        #                      | type_spec ID = EXPR SEMI_COLON
+        id = self.current_token
         var_nodes = [Identifier(self.current_token)]
         self.eat(TokenType.IDENTIFIER)
-
-        #if(self.current_token.get_type() == TokenType.EQUAL): Figure out how to make the assignment operator work with this
-
 
         while(self.current_token.get_type() == TokenType.COMMA):
             self.eat(TokenType.COMMA)
             var_nodes.append(Identifier(self.current_token))
             self.eat(TokenType.IDENTIFIER)
+
+        if(self.current_token.get_type() == TokenType.EQUAL):
+            token = self.current_token
+            self.eat(TokenType.EQUAL)
+            var_declarations = []
+            for var_node in var_nodes:
+                var_declarations.append(VarDecl(var_node, type_node, self.decl_and_assignment_statement(var_node, token)))
+                if(self.current_token.get_type() != TokenType.SEMI_COLON):
+                    self.eat(TokenType.COMMA)
+            self.eat(TokenType.SEMI_COLON)
+            return var_declarations
 
         self.eat(TokenType.SEMI_COLON)
 
@@ -165,6 +175,15 @@ class Parser(object):
             for var_node in var_nodes
         ]
         return var_declarations
+
+    def decl_and_assignment_statement(self, var_node, token):
+        """
+        assignment_statement : variable ASSIGN expr
+        """
+
+        right = self.expr()
+        node = Assign(var_node, token, right)
+        return node
 
     def compound_statement(self):
         nodes = self.statement_list()

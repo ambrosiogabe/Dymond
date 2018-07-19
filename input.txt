@@ -1,12 +1,10 @@
 String str2;
-Int a;
-Decimal x, y;
+Int a = 10;
+Decimal x, y = 10, 20;
 Decimal b;
 
-a = 20;
 x = 3.14;
 b = a // x;
-y = 5.231;
 
 Int z;
 

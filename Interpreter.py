@@ -58,6 +58,8 @@ class Interpreter(NodeVisitor):
             self.visit(child)
 
     def visit_VarDecl(self, node):
+        if(node.assign_node):
+            self.visit(node.assign_node)
         pass
 
     def visit_Variable(self, node):

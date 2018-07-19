@@ -54,6 +54,9 @@ class SemanticAnalyzer(NodeVisitor):
 
         self.symtab.insert(var_symbol)
 
+        if(node.assign_node):
+            self.visit(node.assign_node)
+
     def visit_Variable(self, node):
         for var in node.var_decls:
             self.visit(var)
