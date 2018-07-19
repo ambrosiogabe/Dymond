@@ -12,6 +12,7 @@ z = 203;
 func Int my_func(Int p1, Int p2) {
   String str;
   Int scope = 5;
+
 }
 
 func String my_other_func(String str3, String str4) {

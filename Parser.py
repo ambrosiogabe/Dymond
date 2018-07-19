@@ -77,11 +77,15 @@ class Parser(object):
         children = []
 
         while(self.current_token.get_type() != TokenType.RIGHT_BRACE):
+            child = None
             if(self.current_token.get_type() in TokenType.ALL_TYPES):
-                children.append(self.variable_declarations())
+                child = self.variable_declarations()
+            elif(self.current_token.get_type() == TokenType.FUNC):
+                raise SyntaxError("Cannot declare a function inside a function. Fix line: " + str(self.current_token.get_line()))
+            elif(self.current_token.get_type() != TokenType.RIGHT_BRACE):
+                child = self.compound_statement()
 
-            if(self.current_token.get_type() != TokenType.RIGHT_BRACE):
-                children.append(self.compound_statement())
+            children.append(child)
 
         self.eat(TokenType.RIGHT_BRACE)
 
@@ -306,9 +310,11 @@ class Parser(object):
             node = self.expr()
             self.eat(TokenType.RIGHT_PAREN)
             return node
-        else:
+        elif(token.type == TokenType.IDENTIFIER):
             node = self.variable()
             return node
+
+        raise SyntaxError("Error, unrecognized token: '" + str(token.get_value()) + "' on line: " + str(token.get_line()))
 
 
     def parse(self):
