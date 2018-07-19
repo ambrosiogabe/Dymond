@@ -48,6 +48,15 @@ class VarDecl(AST):
         self.token = var_node.token
         self.assign_node = assign_node
 
+
+# NOT SURE IF I'M GOING TO KEEP THIS
+class ParamDecl(AST):
+    def __init__(self, param_node, type_node, assign_node=None):
+        self.param_node = var_node
+        self.type_node = type_node
+        self.token = var_node.token
+        self.assign_node = assign_node
+
 class Variable(AST):
     def __init__(self, var_decls):
         self.var_decls = var_decls
@@ -67,4 +76,6 @@ class FuncDecl(AST):
         self.func_name = func_name
         self.return_type = return_type
         self.parameters = parameters
+        for param in parameters:
+            print(param)
         self.children = children

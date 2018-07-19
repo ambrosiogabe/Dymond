@@ -50,7 +50,6 @@ def main():
     interpreter = Interpreter(in_parser)
     result = interpreter.interpret()
 
-    print(semantic_analyzer.symtab)
     interpreter.print_global_scope()
 
 if __name__ == "__main__":

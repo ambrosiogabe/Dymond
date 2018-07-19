@@ -34,12 +34,27 @@ class VarSymbol(Symbol):
 
     __repr__ = __str__
 
+class FunctionSymbol(Symbol):
+    def __init__(self, name, params=None):
+        super(FunctionSymbol, self).__init__(name)
+        self.params = params if params is not None else []
+
+    def __str__(self):
+        return '<{class_name}(name={name}, parameters={params})>'.format(
+            class_name=self.__class__.__name__,
+            name=self.name,
+            params=self.params
+        )
+
+    __repr__ = __str__
 
 
 
 class SymbolTable(object):
-    def __init__(self):
+    def __init__(self, scope_name, scope_level):
         self._symbols = OrderedDict()
+        self.scope_name = scope_name
+        self.scope_level = scope_level
         self._init_builtins()
 
     def _init_builtins(self):
@@ -48,8 +63,15 @@ class SymbolTable(object):
         self.define(BuiltInTypeSymbol(TokenType.DECIMAL_TYPE))
 
     def __str__(self):
-        symtab_header = "Symbol table contents"
-        lines = ['\n', symtab_header, '_' * len(symtab_header)]
+        symtab_header = "SCOPE (SCOPED SYMBOL TABLE)"
+        lines = ['\n', symtab_header, '=' * len(symtab_header)]
+        for header_name, header_value in (
+            ('Scope name', self.scope_name),
+            ('Scope level', self.scope_level)
+        ):
+            lines.append("%-15s: %s" % (header_name, header_value))
+        h2 = "Scope (Scoped symbol table) contents"
+        lines.extend([h2, '-' * len(h2)])
         lines.extend(
             ("%8s: %r" % (key, value))
             for key, value in self._symbols.items()

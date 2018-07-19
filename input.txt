@@ -12,5 +12,9 @@ z = 203;
 
 func Int my_func(Int p1, Int p2) {
   String str;
-  z = 2.11
+  Int scope = 5;
 }
+
+String new_string;
+Int c, d, e = 1, 2, 3;
+e = c + d + e;/* + scope;*/
