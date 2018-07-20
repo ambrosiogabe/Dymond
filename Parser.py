@@ -1,5 +1,6 @@
 from TokenType import TokenType
 from AST_Nodes import *
+from Token import Token
 
 class CompoundStatement(object):
     def __init__(self):
@@ -245,9 +246,41 @@ class Parser(object):
 
         left = self.variable()
         token = self.current_token
-        self.eat(TokenType.EQUAL)
-        right = self.expr()
+
+
+        if(self.current_token.get_type() == TokenType.EQUAL):
+            self.eat(TokenType.EQUAL)
+            right = self.expr()
+        elif(self.current_token.get_type() == TokenType.PLUS_EQUAL):
+            self.eat(TokenType.PLUS_EQUAL)
+            right = self.expr_binop(left, Token(TokenType.PLUS, TokenType.PLUS, token.get_line(), token.get_line()) )
+        elif(self.current_token.get_type() == TokenType.MINUS_EQUAL):
+            self.eat(TokenType.MINUS_EQUAL)
+            right = self.expr_binop(left, Token(TokenType.MINUS, TokenType.MINUS, token.get_line(), token.get_line()) )
+        elif(self.current_token.get_type() == TokenType.DIV_EQUAL):
+            self.eat(TokenType.DIV_EQUAL)
+            right = self.expr_binop(left, Token(TokenType.DIV, TokenType.DIV, token.get_line(), token.get_line()) )
+        elif(self.current_token.get_type() == TokenType.CARET_EQUAL):
+            self.eat(TokenType.CARET_EQUAL)
+            right = self.expr_binop(left, Token(TokenType.CARET, TokenType.CARET, token.get_line(), token.get_line()) )
+        elif(self.current_token.get_type() ==  TokenType.TIMES_EQUAL):
+            self.eat(TokenType.TIMES_EQUAL)
+            right = self.expr_binop(left, Token(TokenType.TIMES, TokenType.TIMES, token.get_line(), token.get_line()) )
+        elif(self.current_token.get_type() == TokenType.MODULO_EQUAL):
+            self.eat(TokenType.MODULO_EQUAL)
+            right = self.expr_binop(left, Token(TokenType.MODULO, TokenType.MODULO, token.get_line(), token.get_line()) )
+        else:
+            raise SyntaxError("Expected one of the following: '" + TokenType.EQUAL + "' '" + TokenType.PLUS_EQUAL + "' '" + TokenType.MINUS_EQUAL + "' '" + TokenType.TIMES_EQUAL + "' '" + TokenType.DIV_EQUAL + "' '" + TokenType.CARET_EQUAL + "' '" + TokenType.MODULO_EQUAL + \
+            "' instead got: '" + self.current_token.get_value() + "' on line: " + str(self.current_token.get_line()))
+
+
         node = Assign(left, token, right)
+        return node
+
+    def expr_binop(self, left, token):
+        """ Deals with 1 += 2 type expressions
+        """
+        node = BinOp(left=left, op=token, right=self.factor())
         return node
 
     def variable(self):
@@ -278,7 +311,7 @@ class Parser(object):
     def term(self):
         node = self.factor()
 
-        while(self.current_token.get_type() in (TokenType.DIV, TokenType.TIMES, TokenType.INTEGER_DIV)):
+        while(self.current_token.get_type() in (TokenType.DIV, TokenType.TIMES, TokenType.INTEGER_DIV, TokenType.MODULO)):
             token = self.current_token
             if(token.get_type() == TokenType.TIMES):
                 self.eat(TokenType.TIMES)
@@ -286,6 +319,8 @@ class Parser(object):
                 self.eat(TokenType.DIV)
             elif(token.get_type() == TokenType.INTEGER_DIV):
                 self.eat(TokenType.INTEGER_DIV)
+            elif(token.get_type() == TokenType.MODULO):
+                self.eat(TokenType.MODULO)
 
             node = BinOp(left=node, op=token, right=self.factor())
 

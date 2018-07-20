@@ -45,34 +45,47 @@ class Interpreter(NodeVisitor):
                 return self.add_number_to_string(left, right, node.token)
             elif(type(left).__name__ == "int" and type(right).__name__ == "str"):
                 return self.add_number_to_string(right, left, node.token)
+            if( type(left).__name__ != type(right).__name__):
+                raise TypeError("Unsupported operand type '+' for types '" + type(left).__name__ + "' and '" + type(right).__name__ + "' on line: " + str(node.token.get_line()))
             return left + right
         elif(node.token.get_type() == TokenType.MINUS):
             if(type(left).__name__ == "str" and type(right).__name__ == "str"):
                 return self.subtract_strings(left, right, node.token)
             elif(type(left).__name__ == "str" and type(right).__name__ == "int"):
                 return self.add_number_to_string(left, right, node.token, False)
-            elif(type(left).__name__ == "int" and type(right).__name__ == "str"):
-                raise TypeError("Unsupported operand type '-' for types int and str on line: " + str(node.token.get_line()))
+            if( type(left).__name__ != type(right).__name__):
+                raise TypeError("Unsupported operand type '-' for types '" + type(left).__name__ + "' and '" + type(right).__name__ + "' on line: " + str(node.token.get_line()))
             return left - right
         elif(node.token.get_type() == TokenType.TIMES):
-            if( (type(left).__name__ != "int" and type(left).__name__ != "float") and (type(right).__name__ == "float" or type(right).__name__ == "int") or
-            (type(left).__name__ == "int" or type(left).__name__ == "float") and (type(right).__name__ != "float" and type(right).__name__ != "int")):
+            if( type(left).__name__ != type(right).__name__):
                 raise TypeError("Unsupported operand type '*' for types '" + type(left).__name__ + "' and '" + type(right).__name__ + "' on line: " + str(node.token.get_line()))
             return left * right
         elif(node.token.get_type() == TokenType.DIV):
-            if( (type(left).__name__ != "int" and type(left).__name__ != "float") and (type(right).__name__ == "float" or type(right).__name__ == "int") or
-            (type(left).__name__ == "int" or type(left).__name__ == "float") and (type(right).__name__ != "float" and type(right).__name__ != "int")):
+            if(type(left).__name__ != type(right).__name__):
                 raise TypeError("Unsupported operand type '/' for types '" + type(left).__name__ + "' and '" + type(right).__name__ + "' on line: " + str(node.token.get_line()))
-            # If both types are integers, assume they want integer division
+            # If both types are integers, integer division
             # Floating point division must use at least one floating point number
             if(type(left).__name__ == "int" and type(right).__name__ == "int"):
                 return left // right
+
+            if(right == 0):
+                raise ZeroDivisionError("Cannot divide by zero on line: " + str(node.token.get_line()))
             return left / right
         elif(node.token.get_type() == TokenType.INTEGER_DIV):
-            if( (type(left).__name__ != "int" and type(left).__name__ != "float") and (type(right).__name__ == "float" or type(right).__name__ == "int") or
-            (type(left).__name__ == "int" or type(left).__name__ == "float") and (type(right).__name__ != "float" and type(right).__name__ != "int")):
+            if( type(left).__name__ != type(right).__name__):
                 raise TypeError("Unsupported operand type '//' for types '" + type(left).__name__ + "' and '" + type(right).__name__ + "' on line: " + str(node.token.get_line()))
+
+            if(right == 0):
+                raise ZeroDivisionError("Cannot divide by zero on line: " + str(node.token.get_line()))
             return int(left // right)
+        elif(node.token.get_type() == TokenType.MODULO):
+            if( type(left).__name__ != type(right).__name__):
+                raise TypeError("Unsupported operand type '%' for types '" + type(left).__name__ + "' and '" + type(right).__name__ + "' on line: " + str(node.token.get_line()))
+            if(right == 0):
+                raise ZeroDivisionError("Cannot divide by zero on line: " + str(node.token.get_line()))
+            return left % right
+
+        raise SyntaxError("Unexpected syntax '" + node.token.get_type() + "' on line: " + str(node.token.get_line()))
 
     def visit_Integer(self, node):
         return int(node.token.get_value())

@@ -5,8 +5,10 @@ Int a = 10;
 Decimal x, y = 10.0, 20.0;
 Decimal b;
 
-x = 3.14;
-b = a // x;
+x = 3.0;
+b = a // 5;
 
 String encryption = str + 4;
 String cypher = encryption - 4;
+cypher += 4;
+x %= 2.0;
