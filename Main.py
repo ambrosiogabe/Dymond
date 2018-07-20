@@ -41,14 +41,15 @@ def main():
     print(list)
 
     lexer = Lexer(open("input.txt", "r").read())
-    se_parser = Parser(lexer)
+    se_parser = Parser(lexer, "input")
     semantic_analyzer = SemanticAnalyzer(se_parser)
     semantic_analyzer.analyze()
 
     lexer = Lexer(open("input.txt", "r").read())
-    in_parser = Parser(lexer)
+    in_parser = Parser(lexer, "input")
     interpreter = Interpreter(in_parser)
     result = interpreter.interpret()
+    print(interpreter.GLOBAL_SCOPE)
 
 if __name__ == "__main__":
     main()

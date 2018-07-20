@@ -65,14 +65,9 @@ class TokenType:
 
     # Identifiers and Literals
     IDENTIFIER = "identifier"
-    INTEGER = "integer"
-    DECIMAL = "decimal"
-    STRING = "string"
-
-    # Types
-    INTEGER_TYPE = "Int"
-    DECIMAL_TYPE = "Decimal"
-    STRING_TYPE = "String"
+    INTEGER = "Int"
+    DECIMAL = "Decimal"
+    STRING = "String"
     ALL_TYPES = ("Int", "Decimal", "String")
 
     # Delimiters

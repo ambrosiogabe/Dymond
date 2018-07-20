@@ -6,11 +6,10 @@ class Symbol(object):
     def __init__(self, name, type=None):
         self.name = name
         self.type = type
-        #self.category = category
 
 class BuiltInTypeSymbol(Symbol):
-    def __init__(self, name):
-        super(BuiltInTypeSymbol, self).__init__(name)
+    def __init__(self, name, type):
+        super(BuiltInTypeSymbol, self).__init__(name, type)
 
     def __str__(self):
         return self.name
@@ -20,6 +19,8 @@ class BuiltInTypeSymbol(Symbol):
         class_name = self.__class__.__name__,
         name = self.name
         )
+
+    __repr__ = __str__
 
 class VarSymbol(Symbol):
     def __init__(self, name, type):
@@ -61,9 +62,9 @@ class SymbolTable(object):
             self._init_builtins()
 
     def _init_builtins(self):
-        self.define(BuiltInTypeSymbol(TokenType.INTEGER_TYPE))
-        self.define(BuiltInTypeSymbol(TokenType.STRING_TYPE))
-        self.define(BuiltInTypeSymbol(TokenType.DECIMAL_TYPE))
+        self.define(BuiltInTypeSymbol(TokenType.INTEGER, TokenType.INTEGER))
+        self.define(BuiltInTypeSymbol(TokenType.STRING, TokenType.STRING))
+        self.define(BuiltInTypeSymbol(TokenType.DECIMAL, TokenType.DECIMAL))
 
     def __str__(self):
         symtab_header = "SCOPE (SCOPED SYMBOL TABLE)"
@@ -92,14 +93,14 @@ class SymbolTable(object):
         print("Define: %s" % symbol)
         self._symbols[symbol.name] = symbol
 
-    def lookup(self, name):
+    def lookup(self, name, current_scope_only=False):
         print("Lookup: %s. (Scope name: %s)" % (name, self.scope_name))
         symbol = self._symbols.get(name)
 
         if(symbol is not None):
             return symbol
 
-        if(self.enclosing_scope is not None):
+        if(self.enclosing_scope is not None and not current_scope_only):
             return self.enclosing_scope.lookup(name)
 
     def insert(self, symbol):

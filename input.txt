@@ -1,24 +1,9 @@
-String str2;
+String str = "Hi there";
+String my_other_string = "This is great";
+
 Int a = 10;
-Decimal x, y = 10, 20;
+Decimal x, y = 10.0, 20.0;
 Decimal b;
 
 x = 3.14;
 b = a // x;
-
-Int z;
-z = 203;
-
-func Int my_func(Int p1, Int p2) {
-  String str;
-  Int scope = 5;
-
-}
-
-func String my_other_func(String str3, String str4) {
-  String local_str;
-}
-
-String new_string;
-Int c, d, e = 1, 2, 3;
-e = c + d + e;

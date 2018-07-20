@@ -26,6 +26,10 @@ class Float(AST):
     def __init__(self, token):
         self.token = token
 
+class String(AST):
+    def __init__(self, token):
+        self.token = token
+
 class UnaryOperator(AST):
     def __init__(self, op, expr):
         self.token = self.op = op

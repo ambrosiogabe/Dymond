@@ -30,9 +30,10 @@ class EmptyProgram(object):
 
 
 class Parser(object):
-    def __init__(self, lexer):
+    def __init__(self, lexer, program_name=None):
         self.lexer = lexer
         self.current_token = self.lexer.next_token()
+        self.program_name = program_name
 
     def eat(self, token_type):
         if(self.current_token.get_type() == token_type):
@@ -53,13 +54,12 @@ class Parser(object):
 
         children = []
         while(self.current_token.get_type() != TokenType.EOF):
+
             if(self.current_token.get_type() in TokenType.ALL_TYPES):
                 children.append(self.variable_declarations())
-
-            if(self.current_token.get_type() == TokenType.FUNC):
+            elif(self.current_token.get_type() == TokenType.FUNC):
                 children.append(self.function_declaration())
-
-            if(self.current_token.get_type() != TokenType.EOF):
+            elif(self.current_token.get_type() != TokenType.EOF):
                 children.append(self.compound_statement())
 
         self.eat(TokenType.EOF)
@@ -219,7 +219,7 @@ class Parser(object):
                 results.append(node)
 
         if(self.current_token.get_type() == TokenType.IDENTIFIER):
-            raise SyntaxError("Did not expect an identifier at line: ", self.current_token.get_line())
+            raise SyntaxError("Did not expect an identifier at line: " + str(self.current_token.get_line()))
 
         return results
 
@@ -313,6 +313,9 @@ class Parser(object):
         elif(token.type == TokenType.IDENTIFIER):
             node = self.variable()
             return node
+        elif(token.type == TokenType.STRING):
+            self.eat(TokenType.STRING)
+            return String(token)
 
         raise SyntaxError("Error, unrecognized token: '" + str(token.get_value()) + "' on line: " + str(token.get_line()))
 

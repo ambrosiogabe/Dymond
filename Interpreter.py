@@ -1,10 +1,12 @@
 from TokenType import TokenType
 from Token import Token
+from SymbolTable import SymbolTable
 from AST_Nodes import NodeVisitor
 
 class Interpreter(NodeVisitor):
     def __init__(self, parser):
         self.parser = parser
+
         self.GLOBAL_SCOPE = {}
 
     def visit_BinOp(self, node):
@@ -31,6 +33,9 @@ class Interpreter(NodeVisitor):
 
     def visit_Float(self, node):
         return float(node.token.get_value())
+
+    def visit_String(self, node):
+        return str(node.token.get_value())
 
     def visit_UnaryOperator(self, node):
         op = node.op.get_type()

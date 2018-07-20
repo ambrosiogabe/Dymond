@@ -90,10 +90,10 @@ class Lexer:
         symbol = self.input[self.cur_pos]
         entire_string = "\""
 
-        while(self.cur_pos < len(self.input) and (not Utils.is_beginning_of_string(symbol) or not in_escape_sequence)):
+        while(self.cur_pos < len(self.input) and not(Utils.is_beginning_of_string(symbol) or in_escape_sequence)):
             symbol = self.input[self.cur_pos]
 
-            if(Utils.is_escape_charcater(symbol) and not in_escape_sequence):
+            if(Utils.is_escape_character(symbol) and not in_escape_sequence):
                 in_escape_sequence = True
                 self.cur_pos += 1
                 self.cur_column += 1
