@@ -359,7 +359,6 @@ class Lexer:
                 if(lookahead == "+"):
                     return Token(TokenType.PLUS_PLUS, "++", self.cur_line, self.cur_column)
 
-
             return Token(TokenType.PLUS, "+", self.cur_line, self.cur_column)
 
         elif(symbol == "/"):

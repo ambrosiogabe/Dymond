@@ -360,7 +360,7 @@ class Parser(object):
 
         return node
 
-    # Exponent operator level: 2
+    # Exponent and unary ++ -- operator level: 2
     def exponent(self):
         node = self.factor()
 
@@ -381,12 +381,21 @@ class Parser(object):
     # Unary operators and other operators of highest precedence
     def factor(self):
         token = self.current_token
+        print(token.get_type())
+        print(TokenType.PLUS_PLUS)
+        print(token.get_value())
 
         if(token.get_type() == TokenType.PLUS):
             self.eat(TokenType.PLUS)
             return UnaryOperator(token, self.factor())
         elif(token.get_type() == TokenType.MINUS):
             self.eat(TokenType.MINUS)
+            return UnaryOperator(token, self.factor())
+        elif(token.get_type() == TokenType.PLUS_PLUS):
+            self.eat(TokenType.PLUS_PLUS)
+            return UnaryOperator(token, self.factor())
+        elif(token.get_type() == TokenType.MINUS_MINUS):
+            self.eat(TokenType.MINUS_MINUS)
             return UnaryOperator(token, self.factor())
         elif(token.get_type() == TokenType.NOT):
             self.eat(TokenType.NOT)
@@ -400,15 +409,15 @@ class Parser(object):
         elif(token.get_type() == TokenType.BOOL):
             self.eat(TokenType.BOOL)
             return Bool(token)
-        elif(token.type == TokenType.LEFT_PAREN):
+        elif(token.get_type() == TokenType.LEFT_PAREN):
             self.eat(TokenType.LEFT_PAREN)
             node = self.expr()
             self.eat(TokenType.RIGHT_PAREN)
             return node
-        elif(token.type == TokenType.IDENTIFIER):
+        elif(token.get_type() == TokenType.IDENTIFIER):
             node = self.variable()
             return node
-        elif(token.type == TokenType.STRING):
+        elif(token.get_type() == TokenType.STRING):
             self.eat(TokenType.STRING)
             return String(token)
 

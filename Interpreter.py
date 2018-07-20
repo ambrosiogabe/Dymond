@@ -138,6 +138,10 @@ class Interpreter(NodeVisitor):
             return self.visit(node.expr)
         elif(op == TokenType.NOT):
             return not self.visit(node.expr)
+        elif(op == TokenType.PLUS_PLUS):
+            return 1 + self.visit(node.expr)
+        elif(op == TokenType.MINUS_MINUS):
+            return self.visit(node.expr) - 1
 
     def visit_CompoundStatement(self, node):
         for child in node.children:
