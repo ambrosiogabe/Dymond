@@ -288,7 +288,6 @@ class Parser(object):
     def expr_binop(self, left, token):
         """ Deals with 1 += 2 type expressions
         """
-        print(self.current_token.get_value())
         node = BinOp(left=left, op=token, right=self.expr())
         return node
 
@@ -316,11 +315,25 @@ class Parser(object):
 
     # and level: 5
     def and_expr(self):
-        node = self.additive()
+        node = self.equality_expr()
 
         while(self.current_token.get_type() == TokenType.AND):
             token = self.current_token
             self.eat(TokenType.AND)
+            node = BinOp(left=node, op=token, right=self.equality_expr())
+
+        return node
+
+    def equality_expr(self):
+        node = self.additive()
+
+        while(self.current_token.get_type() in (TokenType.DOUBLE_EQUAL, TokenType.NOT_EQUAL)):
+            token = self.current_token
+            if(token.get_type() == TokenType.DOUBLE_EQUAL):
+                self.eat(TokenType.DOUBLE_EQUAL)
+            elif(Token.getType() == TokenType.NOT_EQUAL):
+                self.eat(TokenType.NOT_EQUAL)
+
             node = BinOp(left=node, op=token, right=self.additive())
 
         return node
@@ -381,9 +394,6 @@ class Parser(object):
     # Unary operators and other operators of highest precedence
     def factor(self):
         token = self.current_token
-        print(token.get_type())
-        print(TokenType.PLUS_PLUS)
-        print(token.get_value())
 
         if(token.get_type() == TokenType.PLUS):
             self.eat(TokenType.PLUS)

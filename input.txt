@@ -15,4 +15,6 @@ x %= 2.0;
 
 Int my_int = 5;
 
-Bool my_bool = True;
+my_int ^= 2;
+
+Bool my_bool = "This_String" == 5;

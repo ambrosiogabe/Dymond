@@ -104,6 +104,10 @@ class Interpreter(NodeVisitor):
             elif(type(left).__name__ != None and type(right).__name__ == "bool"):
                 return (True or right)
             return False
+        elif(node.token.get_type() == TokenType.DOUBLE_EQUAL):
+            return left == right
+        elif(node.token.get_type() == TokenType.NOT_EQUAL):
+            return left == right
         elif(node.token.get_type() == TokenType.PLUS_PLUS):
             if(type(left).__name__ == "int" or type(left).__name__ == "float"):
                 return left + 1
