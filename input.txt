@@ -7,3 +7,6 @@ Decimal b;
 
 x = 3.14;
 b = a // x;
+
+String encryption = str + 4;
+String cypher = encryption - 4;

@@ -129,6 +129,7 @@ class Lexer:
                 entire_string += symbol
             self.cur_pos += 1
             self.cur_column += 1
+        entire_string = entire_string[1:-1]
 
         return Token(TokenType.STRING, entire_string, self.cur_pos, self.cur_column)
 

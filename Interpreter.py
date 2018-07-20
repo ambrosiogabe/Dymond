@@ -9,23 +9,69 @@ class Interpreter(NodeVisitor):
 
         self.GLOBAL_SCOPE = {}
 
+    # Custom interpretation functions for various methods
+    def subtract_strings(self, left, right, token):
+        returnStr = []
+        if(right in left):
+            returnStr = left.split(right)
+            if(len(returnStr) == 2):
+                for i in returnStr:
+                    if(len(i) > 0):
+                        returnStr = i
+                        break
+
+        if(type(returnStr).__name__ == "str"):
+            return returnStr
+        raise SyntaxError("Cannot subtract string '" + right + "' from string '" + left + "' on line: " + str(token.get_line()))
+
+    def add_number_to_string(self, left, right, token, add=True):
+        retStr = []
+        for char in left:
+            num = ord(char)
+            if(add):
+                num += right
+            else:
+                num -= right
+            retStr.append(chr(num))
+        return "".join(retStr)
+
+    # This phase enables type checking to make sure your not doing anything illegal
     def visit_BinOp(self, node):
         left = self.visit(node.left)
         right = self.visit(node.right)
 
         if(node.token.get_type() == TokenType.PLUS):
+            if(type(left).__name__ == "str" and type(right).__name__ == "int"):
+                return self.add_number_to_string(left, right, node.token)
+            elif(type(left).__name__ == "int" and type(right).__name__ == "str"):
+                return self.add_number_to_string(right, left, node.token)
             return left + right
         elif(node.token.get_type() == TokenType.MINUS):
+            if(type(left).__name__ == "str" and type(right).__name__ == "str"):
+                return self.subtract_strings(left, right, node.token)
+            elif(type(left).__name__ == "str" and type(right).__name__ == "int"):
+                return self.add_number_to_string(left, right, node.token, False)
+            elif(type(left).__name__ == "int" and type(right).__name__ == "str"):
+                raise TypeError("Unsupported operand type '-' for types int and str on line: " + str(node.token.get_line()))
             return left - right
         elif(node.token.get_type() == TokenType.TIMES):
+            if( (type(left).__name__ != "int" and type(left).__name__ != "float") and (type(right).__name__ == "float" or type(right).__name__ == "int") or
+            (type(left).__name__ == "int" or type(left).__name__ == "float") and (type(right).__name__ != "float" and type(right).__name__ != "int")):
+                raise TypeError("Unsupported operand type '*' for types '" + type(left).__name__ + "' and '" + type(right).__name__ + "' on line: " + str(node.token.get_line()))
             return left * right
         elif(node.token.get_type() == TokenType.DIV):
+            if( (type(left).__name__ != "int" and type(left).__name__ != "float") and (type(right).__name__ == "float" or type(right).__name__ == "int") or
+            (type(left).__name__ == "int" or type(left).__name__ == "float") and (type(right).__name__ != "float" and type(right).__name__ != "int")):
+                raise TypeError("Unsupported operand type '/' for types '" + type(left).__name__ + "' and '" + type(right).__name__ + "' on line: " + str(node.token.get_line()))
             # If both types are integers, assume they want integer division
             # Floating point division must use at least one floating point number
             if(type(left).__name__ == "int" and type(right).__name__ == "int"):
                 return left // right
             return left / right
         elif(node.token.get_type() == TokenType.INTEGER_DIV):
+            if( (type(left).__name__ != "int" and type(left).__name__ != "float") and (type(right).__name__ == "float" or type(right).__name__ == "int") or
+            (type(left).__name__ == "int" or type(left).__name__ == "float") and (type(right).__name__ != "float" and type(right).__name__ != "int")):
+                raise TypeError("Unsupported operand type '//' for types '" + type(left).__name__ + "' and '" + type(right).__name__ + "' on line: " + str(node.token.get_line()))
             return int(left // right)
 
     def visit_Integer(self, node):
