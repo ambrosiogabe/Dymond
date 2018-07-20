@@ -39,6 +39,12 @@ class UnaryOperator(AST):
         self.token = self.op = op
         self.expr = expr
 
+class IfNode(AST):
+    def __init__(self, validity, true_block, false_block=None):
+        self.validity = validity
+        self.true_block = true_block
+        self.false_block = false_block
+
 # These are the program properties
 class Program(AST):
     def __init__(self, children):

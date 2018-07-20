@@ -89,6 +89,35 @@ class SemanticAnalyzer(NodeVisitor):
         print("LEAVE scope: %s" % func_name)
         self.current_scope = self.current_scope.enclosing_scope
 
+    def visit_IfNode(self, node):
+        print("ENTER scope: if")
+        if_scope = SymbolTable(
+            scope_name="if",
+            scope_level=self.current_scope.scope_level + 1,
+            enclosing_scope=self.current_scope
+        )
+        self.current_scope = if_scope
+        for child in node.true_block:
+            self.visit(child)
+
+        print(if_scope)
+        print("LEAVE scope: if")
+        self.current_scope = self.current_scope.enclosing_scope
+
+        if(node.false_block):
+            print("ENTER scope: else")
+            else_scope = SymbolTable(
+                scope_name="else",
+                scope_level=self.current_scope.scope_level + 1,
+                enclosing_scope=self.current_scope
+            )
+
+            for child in node.false_block:
+                self.visit(child)
+            print(else_scope)
+            print("LEAVE scope: else")
+            self.current_scope = self.current_scope.enclosing_scope
+
     def visit_VarDecl(self, node):
         type_name = node.type_node.value
         type_symbol = self.current_scope.lookup(type_name)

@@ -17,4 +17,4 @@ Int my_int = 5;
 
 my_int ^= 2;
 
-Bool my_bool = "This_String" == 5;
+Bool my_bool = True;

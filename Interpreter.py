@@ -189,6 +189,16 @@ class Interpreter(NodeVisitor):
         for child in node.children:
             self.visit(child)
 
+    def visit_IfNode(self, node):
+        validity = self.visit(node.validity)
+        if(validity):
+            for child in node.true_block:
+                self.visit(child)
+        else:
+            if(node.false_block):
+                for child in node.false_block:
+                    self.visit(child)
+
     def interpret(self):
         tree = self.parser.parse()
 

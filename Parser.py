@@ -60,6 +60,8 @@ class Parser(object):
                 children.append(self.variable_declarations())
             elif(self.current_token.get_type() == TokenType.FUNC):
                 children.append(self.function_declaration())
+            elif(self.current_token.get_type() == TokenType.IF):
+                children.append(self.if_statement())
             elif(self.current_token.get_type() != TokenType.EOF):
                 children.append(self.compound_statement())
 
@@ -69,26 +71,22 @@ class Parser(object):
         return program
 
 
-    def func_block(self):
+    def block(self):
         """ block : LEFT_BRACE declarations*
                   | compound_statement* RIGHT_BRACE
         """
-
-        self.eat(TokenType.LEFT_BRACE)
         children = []
 
         while(self.current_token.get_type() != TokenType.RIGHT_BRACE):
             child = None
             if(self.current_token.get_type() in TokenType.ALL_TYPES):
-                child = self.variable_declarations()
+                children.append(self.variable_declarations())
             elif(self.current_token.get_type() == TokenType.FUNC):
-                raise SyntaxError("Cannot declare a function inside a function. Fix line: " + str(self.current_token.get_line()))
+                raise SyntaxError("Cannot declare a function inside a block. Fix line: " + str(self.current_token.get_line()))
             elif(self.current_token.get_type() != TokenType.RIGHT_BRACE):
-                child = self.compound_statement()
-
-            children.append(child)
-
-        self.eat(TokenType.RIGHT_BRACE)
+                children.append(self.compound_statement())
+            elif(self.current_token.get_type() == TokenType.RIGHT_BRACE):
+                break
 
         return children
 
@@ -137,10 +135,34 @@ class Parser(object):
                     self.eat(TokenType.COMMA)
 
         self.eat(TokenType.RIGHT_PAREN)
-        children = self.func_block()
+
+        self.eat(TokenType.LEFT_BRACE)
+        children = self.block()
+        self.eat(TokenType.RIGHT_BRACE)
+
         func_decl = FuncDecl(func_name, return_type, parameters, children)
 
         return func_decl
+
+    def if_statement(self):
+        self.eat(TokenType.IF)
+
+        validity = self.expr()
+
+        self.eat(TokenType.LEFT_BRACE)
+        true_block = self.block()
+        self.eat(TokenType.RIGHT_BRACE)
+
+        false_block = None
+
+        if(self.current_token.get_type() == TokenType.ELSE):
+            self.eat(TokenType.ELSE)
+
+            self.eat(TokenType.LEFT_BRACE)
+            false_block = self.block()
+            self.eat(TokenType.RIGHT_BRACE)
+
+        return IfNode(validity, true_block, false_block)
 
     def parameter_declaration(self, type_node):
         var_node = Identifier(self.current_token)
