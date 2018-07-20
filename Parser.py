@@ -62,6 +62,8 @@ class Parser(object):
                 children.append(self.function_declaration())
             elif(self.current_token.get_type() == TokenType.IF):
                 children.append(self.if_statement())
+            elif(self.current_token.get_type() == TokenType.WHILE):
+                children.append(self.while_loop())
             elif(self.current_token.get_type() != TokenType.EOF):
                 children.append(self.compound_statement())
 
@@ -163,6 +165,17 @@ class Parser(object):
             self.eat(TokenType.RIGHT_BRACE)
 
         return IfNode(validity, true_block, false_block)
+
+    def while_loop(self):
+        self.eat(TokenType.WHILE)
+        condition = self.expr()
+
+        self.eat(TokenType.LEFT_BRACE)
+        true_block = self.block()
+        self.eat(TokenType.RIGHT_BRACE)
+
+        return WhileNode(condition, true_block)
+
 
     def parameter_declaration(self, type_node):
         var_node = Identifier(self.current_token)
@@ -353,7 +366,7 @@ class Parser(object):
             token = self.current_token
             if(token.get_type() == TokenType.DOUBLE_EQUAL):
                 self.eat(TokenType.DOUBLE_EQUAL)
-            elif(Token.getType() == TokenType.NOT_EQUAL):
+            elif(token.get_type() == TokenType.NOT_EQUAL):
                 self.eat(TokenType.NOT_EQUAL)
 
             node = BinOp(left=node, op=token, right=self.additive())
@@ -397,19 +410,30 @@ class Parser(object):
 
     # Exponent and unary ++ -- operator level: 2
     def exponent(self):
-        node = self.factor()
+        node = self.relational_operators()
 
         while(self.current_token.get_type() in (TokenType.CARET, TokenType.PLUS_PLUS, TokenType.MINUS_MINUS)):
             token = self.current_token
             if(token.get_type() == TokenType.CARET):
                 self.eat(TokenType.CARET)
-                node = BinOp(left=node, op=token, right=self.factor())
+                node = BinOp(left=node, op=token, right=self.relational_operators())
             elif(token.get_type() == TokenType.PLUS_PLUS):
                 self.eat(TokenType.PLUS_PLUS)
                 node = BinOp( left=node, op=token, right=Integer(Token( TokenType.INTEGER, "1", token.get_line(), token.get_line() ) ))
             elif(token.get_type() == TokenType.MINUS_MINUS):
                 self.eat(TokenType.MINUS_MINUS)
                 node = BinOp( left=node, op=token, right=Integer(Token( TokenType.INTEGER, "1", token.get_line(), token.get_line() ) ))
+
+        return node
+
+    def relational_operators(self):
+        node = self.factor()
+
+        while(self.current_token.get_type() in (TokenType.LESS, TokenType.GREATER, TokenType.LESS_OR_EQUAL, TokenType.GREATER_OR_EQUAL)):
+            token = self.current_token
+            if(token.get_type() == TokenType.LESS):
+                self.eat(TokenType.LESS)
+                node = BinOp(left=node, op=token, right=self.factor())
 
         return node
 

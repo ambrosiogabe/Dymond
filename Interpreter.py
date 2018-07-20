@@ -114,6 +114,8 @@ class Interpreter(NodeVisitor):
         elif(node.token.get_type() == TokenType.MINUS_MINUS):
             if(type(left).__name__ == "int" or type(left).__name__ == "float"):
                 return left - 1
+        elif(node.token.get_type() == TokenType.LESS):
+            return left < right
 
         raise SyntaxError("Unexpected syntax '" + node.token.get_type() + "' on line: " + str(node.token.get_line()))
 
@@ -198,6 +200,13 @@ class Interpreter(NodeVisitor):
             if(node.false_block):
                 for child in node.false_block:
                     self.visit(child)
+
+    def visit_WhileNode(self, node):
+        condition = self.visit(node.condition)
+        while(condition):
+            for child in node.true_block:
+                self.visit(child)
+            condition = self.visit(node.condition)
 
     def interpret(self):
         tree = self.parser.parse()

@@ -45,6 +45,11 @@ class IfNode(AST):
         self.true_block = true_block
         self.false_block = false_block
 
+class WhileNode(AST):
+    def __init__(self, condition, true_block):
+        self.condition = condition
+        self.true_block = true_block
+
 # These are the program properties
 class Program(AST):
     def __init__(self, children):

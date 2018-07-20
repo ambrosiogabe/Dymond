@@ -118,6 +118,21 @@ class SemanticAnalyzer(NodeVisitor):
             print("LEAVE scope: else")
             self.current_scope = self.current_scope.enclosing_scope
 
+    def visit_WhileNode(self, node):
+        print("ENTER scope: while")
+        while_scope = SymbolTable(
+            scope_name="while",
+            scope_level=self.current_scope.scope_level + 1,
+            enclosing_scope=self.current_scope
+        )
+        self.current_scope = while_scope
+        for child in node.true_block:
+            self.visit(child)
+
+        print(while_scope)
+        print("LEAVE scope: while")
+        self.current_scope = self.current_scope.enclosing_scope
+
     def visit_VarDecl(self, node):
         type_name = node.type_node.value
         type_symbol = self.current_scope.lookup(type_name)

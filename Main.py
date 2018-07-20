@@ -20,7 +20,7 @@ def main():
 
     #print(file_name)
 
-    in_file = open("input.txt", "r")
+    in_file = open("input.py", "r")
     lexer = Lexer(in_file.read())
     in_file.close()
     tokens = lexer.tokenize()
@@ -40,12 +40,12 @@ def main():
             list += "', "
     print(list)
 
-    lexer = Lexer(open("input.txt", "r").read())
+    lexer = Lexer(open("input.py", "r").read())
     se_parser = Parser(lexer, "input")
     semantic_analyzer = SemanticAnalyzer(se_parser)
     semantic_analyzer.analyze()
 
-    lexer = Lexer(open("input.txt", "r").read())
+    lexer = Lexer(open("input.py", "r").read())
     in_parser = Parser(lexer, "input")
     interpreter = Interpreter(in_parser)
     result = interpreter.interpret()
