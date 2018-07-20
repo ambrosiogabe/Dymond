@@ -84,6 +84,26 @@ class Interpreter(NodeVisitor):
             if(right == 0):
                 raise ZeroDivisionError("Cannot divide by zero on line: " + str(node.token.get_line()))
             return left % right
+        elif(node.token.get_type() == TokenType.CARET):
+            if( type(left).__name__ != type(right).__name__):
+                raise TypeError("Unsupported operand type '%' for types '" + type(left).__name__ + "' and '" + type(right).__name__ + "' on line: " + str(node.token.get_line()))
+            return left ** right
+        elif(node.token.get_type() == TokenType.AND):
+            if(type(left).__name__ == "bool" and type(right).__name__ == "bool"):
+                return (left and right)
+            elif(type(left).__name__ == "bool" and type(right).__name__ != None):
+                return (left and True)
+            elif(type(left).__name__ != None and type(right).__name__ == "bool"):
+                return (True and right)
+            return False
+        elif(node.token.get_type() == TokenType.OR):
+            if(type(left).__name__ == "bool" and type(right).__name__ == "bool"):
+                return (left or right)
+            elif(type(left).__name__ == "bool" and type(right).__name__ != None):
+                return (left or True)
+            elif(type(left).__name__ != None and type(right).__name__ == "bool"):
+                return (True or right)
+            return False
 
         raise SyntaxError("Unexpected syntax '" + node.token.get_type() + "' on line: " + str(node.token.get_line()))
 
@@ -96,11 +116,22 @@ class Interpreter(NodeVisitor):
     def visit_String(self, node):
         return str(node.token.get_value())
 
+    def visit_Bool(self, node):
+        if(node.token.get_value() == "True"):
+            return True
+        elif(node.token.get_value() == "False"):
+            return False
+
+        raise SyntaxError("Expected true or false on line: " + str(node.token.get_line()))
+
     def visit_UnaryOperator(self, node):
         op = node.op.get_type()
         if(op == TokenType.MINUS):
             return -1 * self.visit(node.expr)
-        return self.visit(node.expr)
+        elif(op == TokenType.PLUS):
+            return self.visit(node.expr)
+        elif(op == TokenType.NOT):
+            return not self.visit(node.expr)
 
     def visit_CompoundStatement(self, node):
         for child in node.children:

@@ -241,7 +241,11 @@ class Lexer:
             else:
                 return None
 
-        return Token(keyword, keyword, self.cur_line, self.cur_column)
+        if(keyword == TokenType.TRUE or keyword == TokenType.FALSE):
+            type = TokenType.BOOL
+        else:
+            type = keyword
+        return Token(type, keyword, self.cur_line, self.cur_column)
 
 
     def recognize_delimeter(self):

@@ -213,6 +213,8 @@ class Parser(object):
 
         while(self.current_token.get_type() == TokenType.SEMI_COLON):
             self.eat(TokenType.SEMI_COLON)
+            if(self.current_token.get_type() in TokenType.ALL_TYPES):
+                break
             node = self.statement()
 
             # This if statement checks in case we have reach EOF
@@ -280,7 +282,7 @@ class Parser(object):
     def expr_binop(self, left, token):
         """ Deals with 1 += 2 type expressions
         """
-        node = BinOp(left=left, op=token, right=self.factor())
+        node = BinOp(left=left, op=token, right=self.expr())
         return node
 
     def variable(self):
@@ -293,7 +295,31 @@ class Parser(object):
         return node
 
 
+    # Or operator level: 6
     def expr(self):
+        node = self.and_expr()
+
+        while(self.current_token.get_type() == TokenType.OR):
+            token = self.current_token
+            self.eat(TokenType.OR)
+
+            node = BinOp(left=node, op=token, right=self.and_expr())
+
+        return node
+
+    # and level: 5
+    def and_expr(self):
+        node = self.additive()
+
+        while(self.current_token.get_type() == TokenType.AND):
+            token = self.current_token
+            self.eat(TokenType.AND)
+            node = BinOp(left=node, op=token, right=self.additive())
+
+        return node
+
+    # Plus or minus level: 4
+    def additive(self):
         node = self.term()
 
         while(self.current_token.get_type() in (TokenType.PLUS, TokenType.MINUS)):
@@ -305,11 +331,12 @@ class Parser(object):
 
             node = BinOp(left=node, op=token, right=self.term())
 
+
         return node
 
-
+    # Division, multiplication, and integer division and modulo operators level: 3
     def term(self):
-        node = self.factor()
+        node = self.exponent()
 
         while(self.current_token.get_type() in (TokenType.DIV, TokenType.TIMES, TokenType.INTEGER_DIV, TokenType.MODULO)):
             token = self.current_token
@@ -322,17 +349,35 @@ class Parser(object):
             elif(token.get_type() == TokenType.MODULO):
                 self.eat(TokenType.MODULO)
 
+            node = BinOp(left=node, op=token, right=self.exponent())
+
+        return node
+
+    # Exponent operator level: 2
+    def exponent(self):
+        node = self.factor()
+
+        while(self.current_token.get_type() in (TokenType.CARET)):
+            token = self.current_token
+            if(token.get_type() == TokenType.CARET):
+                self.eat(TokenType.CARET)
+
             node = BinOp(left=node, op=token, right=self.factor())
 
         return node
 
+    # Unary operators and other operators of highest precedence
     def factor(self):
         token = self.current_token
+
         if(token.get_type() == TokenType.PLUS):
             self.eat(TokenType.PLUS)
             return UnaryOperator(token, self.factor())
         elif(token.get_type() == TokenType.MINUS):
             self.eat(TokenType.MINUS)
+            return UnaryOperator(token, self.factor())
+        elif(token.get_type() == TokenType.NOT):
+            self.eat(TokenType.NOT)
             return UnaryOperator(token, self.factor())
         elif(token.get_type() == TokenType.INTEGER):
             self.eat(TokenType.INTEGER)
@@ -340,6 +385,9 @@ class Parser(object):
         elif(token.get_type() == TokenType.DECIMAL):
             self.eat(TokenType.DECIMAL)
             return Float(token)
+        elif(token.get_type() == TokenType.BOOL):
+            self.eat(TokenType.BOOL)
+            return Bool(token)
         elif(token.type == TokenType.LEFT_PAREN):
             self.eat(TokenType.LEFT_PAREN)
             node = self.expr()

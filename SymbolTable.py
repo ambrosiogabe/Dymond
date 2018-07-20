@@ -65,6 +65,7 @@ class SymbolTable(object):
         self.define(BuiltInTypeSymbol(TokenType.INTEGER, TokenType.INTEGER))
         self.define(BuiltInTypeSymbol(TokenType.STRING, TokenType.STRING))
         self.define(BuiltInTypeSymbol(TokenType.DECIMAL, TokenType.DECIMAL))
+        self.define(BuiltInTypeSymbol(TokenType.BOOL, TokenType.BOOL))
 
     def __str__(self):
         symtab_header = "SCOPE (SCOPED SYMBOL TABLE)"

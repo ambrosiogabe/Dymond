@@ -53,7 +53,10 @@ class SemanticAnalyzer(NodeVisitor):
     def visit_String(self, node):
         pass
 
-    def visit_UnaryOp(self, node):
+    def visit_Bool(self, node):
+        pass
+
+    def visit_UnaryOperator(self, node):
         self.visit(node.expr)
 
     def visit_CompoundStatement(self, node):

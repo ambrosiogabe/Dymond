@@ -30,6 +30,10 @@ class String(AST):
     def __init__(self, token):
         self.token = token
 
+class Bool(AST):
+    def __init__(self, token):
+        self.token = token
+
 class UnaryOperator(AST):
     def __init__(self, op, expr):
         self.token = self.op = op

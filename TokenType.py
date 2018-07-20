@@ -5,7 +5,7 @@ class TokenType:
     CLASS = "class"
     ELSE = "else"
     EXTENDS = "extends"
-    FALSE = "false"
+    FALSE = "False"
     FINAL = "final"
     FUNC = "func"
     FOR = "for"
@@ -22,12 +22,17 @@ class TokenType:
     SUPER = "super"
     TO = "to"
     THIS = "this"
-    TRUE = "true"
+    TRUE = "True"
     VAR = "var"
     WHILE = "while"
 
     # Dispatch Operators
     DOT = "."
+
+    # Boolean operators
+    AND = "&&"
+    OR = "||"
+    NOT = "!"
 
     # Assignment Operators
     LEFT_ARROW = "<-"
@@ -68,7 +73,8 @@ class TokenType:
     INTEGER = "Int"
     DECIMAL = "Decimal"
     STRING = "String"
-    ALL_TYPES = ("Int", "Decimal", "String")
+    BOOL = "Bool"
+    ALL_TYPES = ("Int", "Decimal", "String", "Bool")
 
     # Delimiters
     COLON = ":"

@@ -11,7 +11,7 @@ class Token:
         self.column = column
 
     def length(self):
-        return len(self.type)
+        return len(self.value)
 
     def get_value(self):
         return self.value
