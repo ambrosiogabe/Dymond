@@ -284,7 +284,7 @@ class Lexer:
         lookahead = self.input[self.cur_pos + 1] if self.cur_pos + 1 < len(self.input) else Utils.null_char()
         column = self.cur_column
 
-        if(not Utils.is_null_char(lookahead) and (lookahead == "=" or lookahead == "&" or lookahead == "|" or lookahead == "-")):
+        if(not Utils.is_null_char(lookahead) and (lookahead == "=" or lookahead == "&" or lookahead == "|" or lookahead == "-" or lookahead == "+")):
             self.cur_pos += 1
             self.cur_column += 1
 
@@ -302,12 +302,6 @@ class Lexer:
             Token(TokenType.MODULO_EQUAL, "%=", self.cur_line, self.cur_column) \
             if (not Utils.is_null_char(lookahead) and lookahead == "=") else \
             Token(TokenType.MODULO, "%", self.cur_line, self.cur_column)
-
-        elif(symbol == "+"):
-            return \
-            Token(TokenType.PLUS_EQUAL, "+=", self.cur_line, self.cur_column) \
-            if (not Utils.is_null_char(lookahead) and lookahead == "=") else \
-            Token(TokenType.PLUS, "+", self.cur_line, self.cur_column)
 
         elif(symbol == "*"):
             return \
@@ -357,6 +351,17 @@ class Lexer:
 
             raise SyntaxError("Unrecognized token: " + symbol + " on line: " + str(self.cur_line))
 
+        elif(symbol == "+"):
+            if(not Utils.is_null_char(lookahead)):
+                if(lookahead == "="):
+                    return Token(TokenType.PLUS_EQUAL, "+=", self.cur_line, self.cur_column)
+
+                if(lookahead == "+"):
+                    return Token(TokenType.PLUS_PLUS, "++", self.cur_line, self.cur_column)
+
+
+            return Token(TokenType.PLUS, "+", self.cur_line, self.cur_column)
+
         elif(symbol == "/"):
             if(not Utils.is_null_char(lookahead)):
                 if(lookahead == "="):
@@ -403,8 +408,7 @@ class Lexer:
                     return Token(TokenType.RIGHT_ARROW, "->", self.cur_line, column)
                 else:
                     if(lookahead == "-"):
-                        self.cur_pos -= 1
-                    return Token(TokenType.MINUS, "-", self.cur_line, column)
+                        return Token(TokenType.MINUS_MINUS, "--", self.cur_line, column)
 
             if(Utils.is_null_char(lookahead) or (lookahead != "=" and lookahead != ">")):
                 return Token(TokenType.MINUS, "-", self.cur_line, column)

@@ -13,6 +13,8 @@ String cypher = encryption - 4;
 cypher += 4;
 x %= 2.0;
 
-Int my_int = 4 ^ 3;
+Int my_int = 5;
+
+my_int += my_int++ + my_int++;
 
 Bool my_bool = True;

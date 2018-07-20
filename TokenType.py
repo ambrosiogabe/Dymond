@@ -51,6 +51,8 @@ class TokenType:
     PLUS = "+"
     TIMES = "*"
     INTEGER_DIV = "//"
+    PLUS_PLUS = "++"
+    MINUS_MINUS = "--"
 
     # Comparison Operators
     DOUBLE_EQUAL = "=="

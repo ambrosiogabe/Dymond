@@ -104,6 +104,12 @@ class Interpreter(NodeVisitor):
             elif(type(left).__name__ != None and type(right).__name__ == "bool"):
                 return (True or right)
             return False
+        elif(node.token.get_type() == TokenType.PLUS_PLUS):
+            if(type(left).__name__ == "int" or type(left).__name__ == "float"):
+                return left + 1
+        elif(node.token.get_type() == TokenType.MINUS_MINUS):
+            if(type(left).__name__ == "int" or type(left).__name__ == "float"):
+                return left - 1
 
         raise SyntaxError("Unexpected syntax '" + node.token.get_type() + "' on line: " + str(node.token.get_line()))
 

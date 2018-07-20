@@ -271,6 +271,12 @@ class Parser(object):
         elif(self.current_token.get_type() == TokenType.MODULO_EQUAL):
             self.eat(TokenType.MODULO_EQUAL)
             right = self.expr_binop(left, Token(TokenType.MODULO, TokenType.MODULO, token.get_line(), token.get_line()) )
+        elif(self.current_token.get_type() == TokenType.PLUS_PLUS):
+            self.eat(TokenType.PLUS_PLUS)
+            right = BinOp( left=left, op=token, right=Integer(Token( TokenType.INTEGER, "1", token.get_line(), token.get_line() ) ))
+        elif(self.current_token.get_type() == TokenType.MINUS_MINUS):
+            self.eat(TokenType.MINUS_MINUS)
+            right = BinOp( left=left, op=token, right=Integer(Token( TokenType.INTEGER, "1", token.get_line(), token.get_line() ) ))
         else:
             raise SyntaxError("Expected one of the following: '" + TokenType.EQUAL + "' '" + TokenType.PLUS_EQUAL + "' '" + TokenType.MINUS_EQUAL + "' '" + TokenType.TIMES_EQUAL + "' '" + TokenType.DIV_EQUAL + "' '" + TokenType.CARET_EQUAL + "' '" + TokenType.MODULO_EQUAL + \
             "' instead got: '" + self.current_token.get_value() + "' on line: " + str(self.current_token.get_line()))
@@ -282,6 +288,7 @@ class Parser(object):
     def expr_binop(self, left, token):
         """ Deals with 1 += 2 type expressions
         """
+        print(self.current_token.get_value())
         node = BinOp(left=left, op=token, right=self.expr())
         return node
 
@@ -357,12 +364,17 @@ class Parser(object):
     def exponent(self):
         node = self.factor()
 
-        while(self.current_token.get_type() in (TokenType.CARET)):
+        while(self.current_token.get_type() in (TokenType.CARET, TokenType.PLUS_PLUS, TokenType.MINUS_MINUS)):
             token = self.current_token
             if(token.get_type() == TokenType.CARET):
                 self.eat(TokenType.CARET)
-
-            node = BinOp(left=node, op=token, right=self.factor())
+                node = BinOp(left=node, op=token, right=self.factor())
+            elif(token.get_type() == TokenType.PLUS_PLUS):
+                self.eat(TokenType.PLUS_PLUS)
+                node = BinOp( left=node, op=token, right=Integer(Token( TokenType.INTEGER, "1", token.get_line(), token.get_line() ) ))
+            elif(token.get_type() == TokenType.MINUS_MINUS):
+                self.eat(TokenType.MINUS_MINUS)
+                node = BinOp( left=node, op=token, right=Integer(Token( TokenType.INTEGER, "1", token.get_line(), token.get_line() ) ))
 
         return node
 
