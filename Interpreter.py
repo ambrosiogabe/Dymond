@@ -25,35 +25,18 @@ class Interpreter(NodeVisitor):
             return returnStr
         raise SyntaxError("Cannot subtract string '" + right + "' from string '" + left + "' on line: " + str(token.get_line()))
 
-    def add_number_to_string(self, left, right, token, add=True):
-        retStr = []
-        for char in left:
-            num = ord(char)
-            if(add):
-                num += right
-            else:
-                num -= right
-            retStr.append(chr(num))
-        return "".join(retStr)
-
     # This phase enables type checking to make sure your not doing anything illegal
     def visit_BinOp(self, node):
         left = self.visit(node.left)
         right = self.visit(node.right)
 
         if(node.token.get_type() == TokenType.PLUS):
-            if(type(left).__name__ == "str" and type(right).__name__ == "int"):
-                return self.add_number_to_string(left, right, node.token)
-            elif(type(left).__name__ == "int" and type(right).__name__ == "str"):
-                return self.add_number_to_string(right, left, node.token)
             if( type(left).__name__ != type(right).__name__):
                 raise TypeError("Unsupported operand type '+' for types '" + type(left).__name__ + "' and '" + type(right).__name__ + "' on line: " + str(node.token.get_line()))
             return left + right
         elif(node.token.get_type() == TokenType.MINUS):
             if(type(left).__name__ == "str" and type(right).__name__ == "str"):
                 return self.subtract_strings(left, right, node.token)
-            elif(type(left).__name__ == "str" and type(right).__name__ == "int"):
-                return self.add_number_to_string(left, right, node.token, False)
             if( type(left).__name__ != type(right).__name__):
                 raise TypeError("Unsupported operand type '-' for types '" + type(left).__name__ + "' and '" + type(right).__name__ + "' on line: " + str(node.token.get_line()))
             return left - right
@@ -127,13 +110,13 @@ class Interpreter(NodeVisitor):
         raise SyntaxError("Unexpected syntax '" + node.token.get_type() + "' on line: " + str(node.token.get_line()))
 
     def visit_Integer(self, node):
-        return int(node.token.get_value())
+        return int(node.token.value)
 
     def visit_Float(self, node):
-        return float(node.token.get_value())
+        return float(node.token.value)
 
     def visit_String(self, node):
-        return str(node.token.get_value())
+        return str(node.token.value)
 
     def visit_Bool(self, node):
         if(node.token.get_value() == "True"):
@@ -189,8 +172,18 @@ class Interpreter(NodeVisitor):
         var_name = node.left.token.get_value()
         var_symbol = self.current_scope.lookup(var_name)
         value = self.visit(node.right)
-        type = var_symbol.type
+        type_of_symbol = str(var_symbol.type)
+        type_of_value = type(value).__name__
 
+        if(type_of_value == "str"):
+            type_of_value = "String"
+        elif(type_of_value == "int"):
+            type_of_value = "Int"
+        elif(type_of_value == "float"):
+            type_of_value = "Decimal"
+
+        if(type_of_value != type_of_symbol):
+            raise TypeError("Invalid type. Cannot assign '" + type_of_value + "' to a type of '" + str(type_of_symbol) + "' on line: " + str(node.token.get_line()))
         var_symbol.value = value
 
     def visit_Identifier(self, node):
@@ -276,6 +269,25 @@ class Interpreter(NodeVisitor):
             return
 
         print(param)
+
+    def visit_ToString(self, node):
+        param = self.visit(node.param)
+        return str(param)
+
+    def visit_ToInt(self, node):
+        param = self.visit(node.param)
+        return int(param)
+
+    def visit_ToDecimal(self, node):
+        param = self.visit(node.param)
+        return float(param)
+
+    def visit_Input(self, node):
+        param = self.visit(node.param)
+        if(param is None):
+            return input()
+
+        return input(param)
 
     def interpret(self):
         tree = self.parser.parse()

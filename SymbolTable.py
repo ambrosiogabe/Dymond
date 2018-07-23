@@ -21,6 +21,9 @@ class BuiltInTypeSymbol(Symbol):
         name = self.name
         )
 
+    def __call__(self, var):
+        return self.name
+
     __repr__ = __str__
 
 class VarSymbol(Symbol):

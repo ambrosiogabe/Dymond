@@ -201,6 +201,18 @@ class SemanticAnalyzer(NodeVisitor):
     def visit_Print(self, node):
         self.visit(node.param)
 
+    def visit_ToString(self, node):
+        self.visit(node.param)
+
+    def visit_Input(self, node):
+        self.visit(node.param)
+
+    def visit_ToInt(self, node):
+        self.visit(node.param)
+
+    def visit_ToDecimal(self, node):
+        self.visit(node.param)
+
 
     def analyze(self):
         tree = self.parser.parse()

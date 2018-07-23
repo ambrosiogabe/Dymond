@@ -131,6 +131,10 @@ class Lexer:
             self.cur_column += 1
         entire_string = entire_string[1:-1]
 
+        if(len(entire_string) == 0):
+            self.cur_pos += 1
+            self.cur_column += 1
+
         return Token(TokenType.STRING, entire_string, self.cur_pos, self.cur_column)
 
     def recognize_number(self):
@@ -181,9 +185,9 @@ class Lexer:
                 raise SyntaxError("Unrecognized number literal: " + whole_number + " on line: " + str(self.cur_line))
 
         if(is_scientific or is_decimal):
-            return Token(TokenType.DECIMAL, whole_number, self.cur_line, self.cur_pos)
+            return Token(TokenType.DECIMAL, float(whole_number), self.cur_line, self.cur_pos)
 
-        return Token(TokenType.INTEGER, whole_number, self.cur_line, self.cur_pos)
+        return Token(TokenType.INTEGER, int(whole_number), self.cur_line, self.cur_pos)
 
 
     def recognize_keyword_or_identifier(self):

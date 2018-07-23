@@ -346,12 +346,27 @@ class Parser(object):
     def function_call(self, function_name):
         parameters = []
 
+        self.eat(TokenType.LEFT_PAREN)
         if(function_name.value == "print"):
             param = self.expr()
             node = Print(param)
+        elif(function_name.value == "toString"):
+            param = self.expr()
+            node = ToString(param)
+        elif(function_name.value == "input"):
+            param = self.expr()
+            node = Input(param)
+        elif(function_name.value == "toInt"):
+            param = self.expr()
+            node = ToInt(param)
+        elif(function_name.value == "toDecimal"):
+            param = self.expr()
+            node = ToDecimal(param)
+
+        if(node):
+            self.eat(TokenType.RIGHT_PAREN)
             return node
 
-        self.eat(TokenType.LEFT_PAREN)
         while(self.current_token.get_type() != TokenType.RIGHT_PAREN):
             parameters.append(self.expr())
 

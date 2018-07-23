@@ -1,14 +1,3 @@
-String str = "Hi there";
-String my_other_string = "This is great";
+Decimal my_decimal = toDecimal(input("Give me a number: "));
 
-
-Int my_int = 0;
-
-while(my_int < 101) {
-    if(my_int % 10 == 0){
-        print(my_int);
-    } else {
-        print("not yet...")
-    }
-    my_int++;
-}
+print(toString(my_decimal) + " * 5.0 = " + toString(my_decimal * 5.0));

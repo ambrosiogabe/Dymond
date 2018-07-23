@@ -116,3 +116,19 @@ class FunctionCall(AST):
 class Print(AST):
     def __init__(self, param):
         self.param = param
+
+class ToString(AST):
+    def __init__(self, param):
+        self.param = param
+
+class Input(AST):
+    def __init__(self, param):
+        self.param = param
+
+class ToInt(AST):
+    def __init__(self, param):
+        self.param = param
+
+class ToDecimal(AST):
+    def __init__(self, param):
+        self.param = param
