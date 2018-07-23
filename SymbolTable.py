@@ -71,6 +71,7 @@ class SymbolTable(object):
         self.define(BuiltInTypeSymbol(TokenType.STRING, TokenType.STRING))
         self.define(BuiltInTypeSymbol(TokenType.DECIMAL, TokenType.DECIMAL))
         self.define(BuiltInTypeSymbol(TokenType.BOOL, TokenType.BOOL))
+        self.define(FunctionSymbol("print", VarSymbol(name="x", type="String")))
 
     def __str__(self):
         children = ""
@@ -114,6 +115,15 @@ class SymbolTable(object):
 
     def insert(self, symbol):
         self._symbols[symbol.name] = symbol
+
+    def return_scope_of(self, name):
+        symbol = self._symbols.get(name)
+
+        if(symbol is not None):
+            return self
+
+        if(self.enclosing_scope is not None):
+            return self.enclosing_scope.return_scope_of(name)
 
     def reset_multi_scope_vars(self):
         # These are scopes that can have multiple scopes in the same block

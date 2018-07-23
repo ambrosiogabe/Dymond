@@ -56,7 +56,7 @@ class Parser(object):
         children = []
         while(self.current_token.get_type() != TokenType.EOF):
 
-            if(self.current_token.get_type() in TokenType.ALL_TYPES):
+            if(self.current_token.get_value() in TokenType.ALL_TYPES):
                 children.append(self.variable_declarations())
             elif(self.current_token.get_type() == TokenType.FUNC):
                 children.append(self.function_declaration())
@@ -86,10 +86,11 @@ class Parser(object):
             elif(self.current_token.get_type() == TokenType.FUNC):
                 raise SyntaxError("Cannot declare a function inside a block. Fix line: " + str(self.current_token.get_line()))
             elif(self.current_token.get_type() == TokenType.IF):
-                print("ANOTHER IF")
                 children.append(self.if_statement())
             elif(self.current_token.get_type() == TokenType.WHILE):
                 children.append(self.while_loop())
+            elif(self.current_token.get_type() == TokenType.RETURN):
+                break
             elif(self.current_token.get_type() != TokenType.RIGHT_BRACE):
                 children.append(self.compound_statement())
             elif(self.current_token.get_type() == TokenType.RIGHT_BRACE):
@@ -145,9 +146,16 @@ class Parser(object):
 
         self.eat(TokenType.LEFT_BRACE)
         children = self.block()
+
+        return_node = None
+        if(self.current_token.get_type() == TokenType.RETURN):
+            self.eat(TokenType.RETURN)
+            return_node = self.expr()
+            self.eat(TokenType.SEMI_COLON)
+
         self.eat(TokenType.RIGHT_BRACE)
 
-        func_decl = FuncDecl(func_name, return_type, parameters, children)
+        func_decl = FuncDecl(func_name, return_type, parameters, children, return_node)
 
         return func_decl
 
@@ -253,6 +261,7 @@ class Parser(object):
 
         while(self.current_token.get_type() == TokenType.SEMI_COLON):
             self.eat(TokenType.SEMI_COLON)
+
             if(self.current_token.get_type() in TokenType.ALL_TYPES):
                 break
             node = self.statement()
@@ -273,20 +282,29 @@ class Parser(object):
         """
         node = None
         if(self.current_token.get_type() == TokenType.IDENTIFIER):
-            node = self.assignment_statement()
-        elif(self.current_token.get_type() == TokenType.DECIMAL or self.current_token.get_type() == TokenType.INTEGER):
+            node = self.assignment_statement_or_function_call()
+        elif(self.current_token.get_type() == TokenType.DECIMAL or self.current_token.get_type() == TokenType.INTEGER or self.current_token.get_type() == TokenType.STRING):
             node = self.expr()
         elif(self.current_token.get_type() == TokenType.EOF):
             return
 
         return node
 
-    def assignment_statement(self):
+    def assignment_statement_or_function_call(self):
+        id = self.variable()
+        token = self.current_token
+
+        if(token.get_type() == TokenType.LEFT_PAREN or token.get_type() == TokenType.DOT):
+            return self.function_call(id)
+        else:
+            return self.assignment_statement(id)
+
+    def assignment_statement(self, id):
         """
         assignment_statement : variable ASSIGN expr
         """
 
-        left = self.variable()
+        left = id
         token = self.current_token
 
 
@@ -323,6 +341,25 @@ class Parser(object):
 
 
         node = Assign(left, token, right)
+        return node
+
+    def function_call(self, function_name):
+        parameters = []
+
+        if(function_name.value == "print"):
+            param = self.expr()
+            node = Print(param)
+            return node
+
+        self.eat(TokenType.LEFT_PAREN)
+        while(self.current_token.get_type() != TokenType.RIGHT_PAREN):
+            parameters.append(self.expr())
+
+            if(self.current_token.get_type() != TokenType.RIGHT_PAREN):
+                self.eat(TokenType.COMMA)
+        self.eat(TokenType.RIGHT_PAREN)
+
+        node = FunctionCall(function_name, parameters)
         return node
 
     def expr_binop(self, left, token):
@@ -477,6 +514,8 @@ class Parser(object):
             return node
         elif(token.get_type() == TokenType.IDENTIFIER):
             node = self.variable()
+            if(self.current_token.get_type() == TokenType.LEFT_PAREN):
+                node = self.function_call(node)
             return node
         elif(token.get_type() == TokenType.STRING):
             self.eat(TokenType.STRING)

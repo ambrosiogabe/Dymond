@@ -20,6 +20,7 @@ def main():
 
     #print(file_name)
 
+    """
     in_file = open("input.py", "r")
     lexer = Lexer(in_file.read())
     in_file.close()
@@ -39,6 +40,7 @@ def main():
         else:
             list += "', "
     print(list)
+    """
 
     lexer = Lexer(open("input.py", "r").read())
     se_parser = Parser(lexer, "input")

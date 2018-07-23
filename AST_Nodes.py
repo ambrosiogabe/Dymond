@@ -85,14 +85,34 @@ class Type(AST):
         self.token = token
         self.value = token.get_value()
 
-class FuncBlock(AST):
-    def __init__(self, children):
-        self.children = children
-
 class FuncDecl(AST):
     # func_values_node contains return type, parameters
-    def __init__(self, func_name, return_type, parameters, children):
+    def __init__(self, func_name, return_type, parameters, children, return_node):
         self.func_name = func_name
         self.return_type = return_type
         self.parameters = parameters
         self.children = children
+        self.return_node = return_node
+
+class FunctionCall(AST):
+    def __init__(self, func_name, parameters):
+        self.func_name = func_name
+        self.parameters = parameters
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Native Functions Nodes
+class Print(AST):
+    def __init__(self, param):
+        self.param = param

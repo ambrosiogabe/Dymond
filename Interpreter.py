@@ -108,7 +108,7 @@ class Interpreter(NodeVisitor):
         elif(node.token.get_type() == TokenType.DOUBLE_EQUAL):
             return left == right
         elif(node.token.get_type() == TokenType.NOT_EQUAL):
-            return left == right
+            return left != right
         elif(node.token.get_type() == TokenType.PLUS_PLUS):
             if(type(left).__name__ == "int" or type(left).__name__ == "float"):
                 return left + 1
@@ -117,6 +117,12 @@ class Interpreter(NodeVisitor):
                 return left - 1
         elif(node.token.get_type() == TokenType.LESS):
             return left < right
+        elif(node.token.get_type() == TokenType.GREATER):
+            return left > right
+        elif(node.token.get_type() == TokenType.LESS_OR_EQUAL):
+            return left <= right
+        elif(node.token.get_type() == TokenType.GREATER_OR_EQUAL):
+            return left >= right
 
         raise SyntaxError("Unexpected syntax '" + node.token.get_type() + "' on line: " + str(node.token.get_line()))
 
@@ -164,7 +170,7 @@ class Interpreter(NodeVisitor):
         for child in node.children:
             self.visit(child)
 
-        print(self.current_scope)
+
         self.current_scope = self.current_scope.enclosing_scope
 
     def visit_VarDecl(self, node):
@@ -207,7 +213,7 @@ class Interpreter(NodeVisitor):
         for child in node.children:
             self.visit(child)
 
-        print(self.current_scope)
+
         self.current_scope = self.current_scope.enclosing_scope
 
 
@@ -219,7 +225,7 @@ class Interpreter(NodeVisitor):
             for child in node.true_block:
                 self.visit(child)
 
-            print(self.current_scope)
+
             self.current_scope = self.current_scope.enclosing_scope
         else:
             self.current_scope.current_else += 1
@@ -228,7 +234,7 @@ class Interpreter(NodeVisitor):
                 for child in node.false_block:
                     self.visit(child)
 
-                print(self.current_scope)
+
                 self.current_scope = self.current_scope.enclosing_scope
 
     def visit_WhileNode(self, node):
@@ -238,12 +244,38 @@ class Interpreter(NodeVisitor):
 
         condition = self.visit(node.condition)
         while(condition):
+            self.current_scope.reset_multi_scope_vars()
             for child in node.true_block:
                 self.visit(child)
             condition = self.visit(node.condition)
 
-        print(self.current_scope)
+
         self.current_scope = self.current_scope.enclosing_scope
+
+
+    def visit_FunctionCall(self, node):
+        previous_scope = self.current_scope
+
+        parameters = []
+
+        for parameter in node.parameters:
+            parameters.append(self.visit(parameter))
+
+        self.current_scope = self.current_scope.return_scope_of(node.func_name.value)
+
+
+        self.current_scope = previous_scope
+
+    """---------------------
+    # Native function calls
+    ---------------------"""
+    def visit_Print(self, node):
+        param = self.visit(node.param)
+        if(param is None):
+            print()
+            return
+
+        print(param)
 
     def interpret(self):
         tree = self.parser.parse()

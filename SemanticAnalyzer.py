@@ -11,7 +11,7 @@ class SemanticAnalyzer(NodeVisitor):
         self.program_name = self.parser.program_name
 
     def visit_Program(self, node):
-        print("ENTER scope: " + self.program_name)
+        #print("ENTER scope: " + self.program_name)
         builtin_scope = SymbolTable(
             scope_name=self.program_name,
             scope_level=0,
@@ -19,7 +19,7 @@ class SemanticAnalyzer(NodeVisitor):
         )
         self.current_scope = builtin_scope
 
-        print("ENTER scope: global")
+        #print("ENTER scope: global")
         global_scope = SymbolTable(
             scope_name="global",
             scope_level=1,
@@ -34,12 +34,12 @@ class SemanticAnalyzer(NodeVisitor):
         for child in node.children:
             self.visit(child)
 
-        print(global_scope)
+        #print(global_scope)
         self.current_scope = self.current_scope.enclosing_scope
-        print("LEAVE scope: global")
+        #print("LEAVE scope: global")
 
-        print(builtin_scope)
-        print("LEVAE scope: " + self.program_name)
+        #print(builtin_scope)
+        #print("LEVAE scope: " + self.program_name)
 
     def visit_BinOp(self, node):
         left_symbol = self.visit(node.left)
@@ -73,7 +73,7 @@ class SemanticAnalyzer(NodeVisitor):
         func_symbol = FunctionSymbol(func_name)
         self.current_scope.insert(func_symbol)
 
-        print("ENTER scope: %s" % func_name)
+        #print("ENTER scope: %s" % func_name)
         function_scope = SymbolTable(
             scope_name=func_name,
             scope_level=self.current_scope.scope_level + 1,
@@ -82,19 +82,22 @@ class SemanticAnalyzer(NodeVisitor):
         self.current_scope.children[func_name] = function_scope
         self.current_scope = function_scope
 
+        params = []
         for parameter in node.parameters:
-            self.visit(parameter)
+            params.append(self.visit(parameter))
+
+        func_symbol.params = params
 
         for child in node.children:
             self.visit(child)
 
-        print(function_scope)
-        print("LEAVE scope: %s" % func_name)
+        #print(function_scope)
+        #print("LEAVE scope: %s" % func_name)
         self.current_scope = self.current_scope.enclosing_scope
 
     def visit_IfNode(self, node):
         self.current_scope.current_if += 1
-        print("ENTER scope: if" + str(self.current_scope.current_if))
+        #print("ENTER scope: if" + str(self.current_scope.current_if))
         if_scope = SymbolTable(
             scope_name="if" + str(self.current_scope.current_if),
             scope_level=self.current_scope.scope_level + 1,
@@ -105,13 +108,13 @@ class SemanticAnalyzer(NodeVisitor):
         for child in node.true_block:
             self.visit(child)
 
-        print(if_scope)
-        print("LEAVE scope: if")
+        #print(if_scope)
+        #print("LEAVE scope: if")
         self.current_scope = self.current_scope.enclosing_scope
 
         if(node.false_block):
             self.current_scope.current_else += 1
-            print("ENTER scope: else" + str(self.current_scope.current_else))
+            #print("ENTER scope: else" + str(self.current_scope.current_else))
             else_scope = SymbolTable(
                 scope_name="else" + str(self.current_scope.current_else),
                 scope_level=self.current_scope.scope_level + 1,
@@ -122,13 +125,13 @@ class SemanticAnalyzer(NodeVisitor):
 
             for child in node.false_block:
                 self.visit(child)
-            print(else_scope)
-            print("LEAVE scope: else")
+            #print(else_scope)
+            #print("LEAVE scope: else")
             self.current_scope = self.current_scope.enclosing_scope
 
     def visit_WhileNode(self, node):
         self.current_scope.current_while += 1
-        print("ENTER scope: while" + str(self.current_scope.current_while))
+        #print("ENTER scope: while" + str(self.current_scope.current_while))
         while_scope = SymbolTable(
             scope_name="while" + str(self.current_scope.current_while),
             scope_level=self.current_scope.scope_level + 1,
@@ -139,8 +142,8 @@ class SemanticAnalyzer(NodeVisitor):
         for child in node.true_block:
             self.visit(child)
 
-        print(while_scope)
-        print("LEAVE scope: while")
+        #print(while_scope)
+        #print("LEAVE scope: while")
         self.current_scope = self.current_scope.enclosing_scope
 
     def visit_VarDecl(self, node):
@@ -158,6 +161,8 @@ class SemanticAnalyzer(NodeVisitor):
         if(node.assign_node):
             self.visit(node.assign_node)
 
+        return var_symbol
+
     def visit_Variable(self, node):
         for var in node.var_decls:
             self.visit(var)
@@ -170,6 +175,16 @@ class SemanticAnalyzer(NodeVisitor):
 
         right = self.visit(node.right)
 
+    def visit_FunctionCall(self, node):
+        function_name = node.func_name.value
+        function_symbol = self.current_scope.lookup(function_name)
+
+        if(function_symbol is None):
+            raise NameError(repr(function_name) + " is an undefined function on line: " + str(node.func_name.token.get_line()))
+
+        for parameter in node.parameters:
+            self.visit(parameter)
+
     def visit_Identifier(self, node):
         var_name = node.value
         var_symbol = self.current_scope.lookup(var_name)
@@ -178,6 +193,13 @@ class SemanticAnalyzer(NodeVisitor):
             raise NameError(repr(var_name) + " is an undefined variable on line: " + str(node.token.get_line()))
 
         return var_symbol
+
+
+    """---------------------------
+    # Native Function calls
+    ---------------------------"""
+    def visit_Print(self, node):
+        self.visit(node.param)
 
 
     def analyze(self):
