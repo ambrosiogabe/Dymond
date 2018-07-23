@@ -64,6 +64,8 @@ class Parser(object):
                 children.append(self.if_statement())
             elif(self.current_token.get_type() == TokenType.WHILE):
                 children.append(self.while_loop())
+            elif(self.current_token.get_type() == TokenType.FOR):
+                children.append(self.for_loop())
             elif(self.current_token.get_type() != TokenType.EOF):
                 children.append(self.compound_statement())
 
@@ -188,6 +190,30 @@ class Parser(object):
         self.eat(TokenType.RIGHT_BRACE)
 
         return WhileNode(condition, true_block)
+
+
+    def for_loop(self):
+        self.eat(TokenType.FOR)
+        self.eat(TokenType.LEFT_PAREN)
+
+        if(self.current_token.get_type() in TokenType.ALL_TYPES):
+            type = Type(self.current_token)
+            self.eat(self.current_token.get_type())
+            variable = self.variable_declaration(type)
+            print(variable)
+
+        if(self.current_token.get_type() == TokenType.IN):
+            print("IN LOOP")
+        else:
+            condition = self.expr()
+            self.eat(TokenType.SEMI_COLON)
+            incrementer = self.expr()
+            self.eat(TokenType.RIGHT_PAREN)
+            self.eat(TokenType.LEFT_BRACE)
+            for_block = self.block()
+            self.eat(TokenType.RIGHT_BRACE)
+
+            for_loop_node = ForLoop(variable, condition, incrementer)
 
 
     def parameter_declaration(self, type_node):

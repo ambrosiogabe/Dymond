@@ -50,6 +50,8 @@ class WhileNode(AST):
         self.condition = condition
         self.true_block = true_block
 
+
+
 # These are the program properties
 class Program(AST):
     def __init__(self, children):
