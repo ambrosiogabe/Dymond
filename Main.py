@@ -47,9 +47,9 @@ def main():
 
     lexer = Lexer(open("input.py", "r").read())
     in_parser = Parser(lexer, "input")
-    interpreter = Interpreter(in_parser)
+    semantic_analyzer.current_scope.reset_multi_scope_vars()
+    interpreter = Interpreter(in_parser, semantic_analyzer.current_scope)
     result = interpreter.interpret()
-    print(interpreter.GLOBAL_SCOPE)
 
 if __name__ == "__main__":
     main()

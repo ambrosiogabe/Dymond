@@ -4,9 +4,10 @@ from SymbolTable import SymbolTable
 from AST_Nodes import NodeVisitor
 
 class Interpreter(NodeVisitor):
-    def __init__(self, parser):
+    def __init__(self, parser, current_scope):
         self.parser = parser
 
+        self.current_scope = current_scope
         self.GLOBAL_SCOPE = {}
 
     # Custom interpretation functions for various methods
@@ -154,11 +155,17 @@ class Interpreter(NodeVisitor):
             self.visit(child)
 
     def visit_Program(self, node):
+        # Program should only have one child: GLOBAL
+        self.current_scope = self.current_scope.children["global"]
+
         if(len(node.children) == 0):
             self.visit_EmptyProgram()
 
         for child in node.children:
             self.visit(child)
+
+        print(self.current_scope)
+        self.current_scope = self.current_scope.enclosing_scope
 
     def visit_VarDecl(self, node):
         if(node.assign_node):
@@ -174,11 +181,17 @@ class Interpreter(NodeVisitor):
 
     def visit_Assign(self, node):
         var_name = node.left.token.get_value()
-        self.GLOBAL_SCOPE[var_name] = self.visit(node.right)
+        var_symbol = self.current_scope.lookup(var_name)
+        value = self.visit(node.right)
+        type = var_symbol.type
+
+        var_symbol.value = value
 
     def visit_Identifier(self, node):
         var_name = node.token.get_value()
-        val = self.GLOBAL_SCOPE[var_name]
+        var_symbol = self.current_scope.lookup(var_name)
+        val = var_symbol.value
+
         if(val is None):
             raise NameError("Variable: " + var_name + " is not defined on line: " + node.token.get_line())
         else:
@@ -188,25 +201,49 @@ class Interpreter(NodeVisitor):
         return
 
     def visit_FuncDecl(self, node):
+        func_name = node.func_name
+        self.current_scope = self.current_scope.children[func_name]
+
         for child in node.children:
             self.visit(child)
 
+        print(self.current_scope)
+        self.current_scope = self.current_scope.enclosing_scope
+
+
     def visit_IfNode(self, node):
+        self.current_scope.current_if += 1
         validity = self.visit(node.validity)
         if(validity):
+            self.current_scope = self.current_scope.children["if" + str(self.current_scope.current_if)]
             for child in node.true_block:
                 self.visit(child)
+
+            print(self.current_scope)
+            self.current_scope = self.current_scope.enclosing_scope
         else:
+            self.current_scope.current_else += 1
             if(node.false_block):
+                self.current_scope = self.current_scope.children["else" + str(self.current_scope.current_else)]
                 for child in node.false_block:
                     self.visit(child)
 
+                print(self.current_scope)
+                self.current_scope = self.current_scope.enclosing_scope
+
     def visit_WhileNode(self, node):
+        self.current_scope.current_while += 1
+        while_scope = self.current_scope.children["while" + str(self.current_scope.current_while)]
+        self.current_scope = while_scope
+
         condition = self.visit(node.condition)
         while(condition):
             for child in node.true_block:
                 self.visit(child)
             condition = self.visit(node.condition)
+
+        print(self.current_scope)
+        self.current_scope = self.current_scope.enclosing_scope
 
     def interpret(self):
         tree = self.parser.parse()

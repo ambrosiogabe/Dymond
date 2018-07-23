@@ -17,6 +17,7 @@ class SemanticAnalyzer(NodeVisitor):
             scope_level=0,
             enclosing_scope=None
         )
+        self.current_scope = builtin_scope
 
         print("ENTER scope: global")
         global_scope = SymbolTable(
@@ -24,6 +25,7 @@ class SemanticAnalyzer(NodeVisitor):
             scope_level=1,
             enclosing_scope=builtin_scope # None
         )
+        self.current_scope.children[global_scope.scope_name] = global_scope
         self.current_scope = global_scope
 
         if(len(node.children) == 0):
@@ -77,6 +79,7 @@ class SemanticAnalyzer(NodeVisitor):
             scope_level=self.current_scope.scope_level + 1,
             enclosing_scope=self.current_scope
         )
+        self.current_scope.children[func_name] = function_scope
         self.current_scope = function_scope
 
         for parameter in node.parameters:
@@ -90,12 +93,14 @@ class SemanticAnalyzer(NodeVisitor):
         self.current_scope = self.current_scope.enclosing_scope
 
     def visit_IfNode(self, node):
-        print("ENTER scope: if")
+        self.current_scope.current_if += 1
+        print("ENTER scope: if" + str(self.current_scope.current_if))
         if_scope = SymbolTable(
-            scope_name="if",
+            scope_name="if" + str(self.current_scope.current_if),
             scope_level=self.current_scope.scope_level + 1,
             enclosing_scope=self.current_scope
         )
+        self.current_scope.children[if_scope.scope_name] = if_scope
         self.current_scope = if_scope
         for child in node.true_block:
             self.visit(child)
@@ -105,12 +110,15 @@ class SemanticAnalyzer(NodeVisitor):
         self.current_scope = self.current_scope.enclosing_scope
 
         if(node.false_block):
-            print("ENTER scope: else")
+            self.current_scope.current_else += 1
+            print("ENTER scope: else" + str(self.current_scope.current_else))
             else_scope = SymbolTable(
-                scope_name="else",
+                scope_name="else" + str(self.current_scope.current_else),
                 scope_level=self.current_scope.scope_level + 1,
                 enclosing_scope=self.current_scope
             )
+            self.current_scope.children[else_scope.scope_name] = else_scope
+            self.current_scope = else_scope
 
             for child in node.false_block:
                 self.visit(child)
@@ -119,12 +127,14 @@ class SemanticAnalyzer(NodeVisitor):
             self.current_scope = self.current_scope.enclosing_scope
 
     def visit_WhileNode(self, node):
-        print("ENTER scope: while")
+        self.current_scope.current_while += 1
+        print("ENTER scope: while" + str(self.current_scope.current_while))
         while_scope = SymbolTable(
-            scope_name="while",
+            scope_name="while" + str(self.current_scope.current_while),
             scope_level=self.current_scope.scope_level + 1,
             enclosing_scope=self.current_scope
         )
+        self.current_scope.children[while_scope.scope_name] = while_scope
         self.current_scope = while_scope
         for child in node.true_block:
             self.visit(child)

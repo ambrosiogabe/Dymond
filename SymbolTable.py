@@ -6,6 +6,7 @@ class Symbol(object):
     def __init__(self, name, type=None):
         self.name = name
         self.type = type
+        self.value = None
 
 class BuiltInTypeSymbol(Symbol):
     def __init__(self, name, type):
@@ -27,10 +28,11 @@ class VarSymbol(Symbol):
         super(VarSymbol, self).__init__(name, type)
 
     def __str__(self):
-        return "<{class_name}(name='{name}', type='{type}')>".format(
+        return "<{class_name}(name='{name}', type='{type}')> = {value}".format(
         class_name = self.__class__.__name__,
         name=self.name,
-        type=self.type
+        type=self.type,
+        value=self.value
         )
 
     __repr__ = __str__
@@ -57,6 +59,9 @@ class SymbolTable(object):
         self.scope_name = scope_name
         self.scope_level = scope_level
         self.enclosing_scope = enclosing_scope
+        self.children = OrderedDict()
+
+        self.reset_multi_scope_vars()
 
         if(enclosing_scope is None):
             self._init_builtins()
@@ -68,6 +73,10 @@ class SymbolTable(object):
         self.define(BuiltInTypeSymbol(TokenType.BOOL, TokenType.BOOL))
 
     def __str__(self):
+        children = ""
+        for key in self.children:
+            children += key + " "
+
         symtab_header = "SCOPE (SCOPED SYMBOL TABLE)"
         lines = ['\n', symtab_header, '=' * len(symtab_header)]
         for header_name, header_value in (
@@ -75,7 +84,8 @@ class SymbolTable(object):
             ('Scope level', self.scope_level),
             ('Enclosing scope',
                 self.enclosing_scope.scope_name if self.enclosing_scope else None
-            )
+            ),
+            ("Children: ", children)
         ):
             lines.append("%-15s: %s" % (header_name, header_value))
         h2 = "Scope (Scoped symbol table) contents"
@@ -91,11 +101,9 @@ class SymbolTable(object):
     __repr__ = __str__
 
     def define(self, symbol):
-        print("Define: %s" % symbol)
         self._symbols[symbol.name] = symbol
 
     def lookup(self, name, current_scope_only=False):
-        print("Lookup: %s. (Scope name: %s)" % (name, self.scope_name))
         symbol = self._symbols.get(name)
 
         if(symbol is not None):
@@ -105,5 +113,15 @@ class SymbolTable(object):
             return self.enclosing_scope.lookup(name)
 
     def insert(self, symbol):
-        print("Insert: %s" % symbol.name)
         self._symbols[symbol.name] = symbol
+
+    def reset_multi_scope_vars(self):
+        # These are scopes that can have multiple scopes in the same block
+        # so I need to keep track of which scope I am at
+        self.current_if = 0
+        self.current_while = 0
+        self.current_for = 0
+        self.current_else = 0
+
+        for child in self.children:
+            self.children[child].reset_multi_scope_vars()

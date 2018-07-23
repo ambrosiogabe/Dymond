@@ -85,6 +85,11 @@ class Parser(object):
                 children.append(self.variable_declarations())
             elif(self.current_token.get_type() == TokenType.FUNC):
                 raise SyntaxError("Cannot declare a function inside a block. Fix line: " + str(self.current_token.get_line()))
+            elif(self.current_token.get_type() == TokenType.IF):
+                print("ANOTHER IF")
+                children.append(self.if_statement())
+            elif(self.current_token.get_type() == TokenType.WHILE):
+                children.append(self.while_loop())
             elif(self.current_token.get_type() != TokenType.RIGHT_BRACE):
                 children.append(self.compound_statement())
             elif(self.current_token.get_type() == TokenType.RIGHT_BRACE):
