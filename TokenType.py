@@ -78,6 +78,11 @@ class TokenType:
     BOOL = "Bool"
     ALL_TYPES = ("Int", "Decimal", "String", "Bool")
 
+
+    # Advanced types: E.g lists, structs, dictionaries
+    LIST = "List"
+    ALL_ADVANCED_TYPES = ("List")
+
     # Delimiters
     COLON = ":"
     COMMA = ","

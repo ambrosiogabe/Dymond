@@ -74,6 +74,7 @@ class SymbolTable(object):
         self.define(BuiltInTypeSymbol(TokenType.STRING, TokenType.STRING))
         self.define(BuiltInTypeSymbol(TokenType.DECIMAL, TokenType.DECIMAL))
         self.define(BuiltInTypeSymbol(TokenType.BOOL, TokenType.BOOL))
+        self.define(BuiltInTypeSymbol(TokenType.LIST, TokenType.LIST))
         self.define(FunctionSymbol("print", VarSymbol(name="x", type="String")))
 
     def __str__(self):

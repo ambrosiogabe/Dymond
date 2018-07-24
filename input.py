@@ -1,8 +1,9 @@
 
+# TODO make this work
+#List:Int my_list = [1, 2, 3, 4];
 
-for(Int i=0; i < 10; i++) {
-    for(Int j=0; j < 5; j++) {
-        print(j, " ");
-    }
-    print();
-}
+# TODO also make this work
+#func Int my_func() {
+#    print("my func");
+#}
+#my_func();

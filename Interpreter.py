@@ -126,6 +126,13 @@ class Interpreter(NodeVisitor):
 
         raise SyntaxError("Expected true or false on line: " + str(node.token.get_line()))
 
+    def visit_List(self, node):
+        my_list = []
+        for child in node.tokens:
+            my_list.append(self.visit(child))
+
+        return my_list
+
     def visit_UnaryOperator(self, node):
         op = node.op.get_type()
         if(op == TokenType.MINUS):
@@ -181,6 +188,8 @@ class Interpreter(NodeVisitor):
             type_of_value = "Int"
         elif(type_of_value == "float"):
             type_of_value = "Decimal"
+        elif(type_of_value == "list"):
+            type_of_value = "List"
 
         if(type_of_value != type_of_symbol):
             raise TypeError("Invalid type. Cannot assign '" + type_of_value + "' to a type of '" + str(type_of_symbol) + "' on line: " + str(node.token.get_line()))
@@ -254,9 +263,10 @@ class Interpreter(NodeVisitor):
         while(condition):
             self.current_scope.reset_multi_scope_vars()
             self.visit(node.incrementer)
-            for child in node.for_block:
-                self.visit(child)
             condition = self.visit(node.condition)
+            if(condition):
+                for child in node.for_block:
+                    self.visit(child)
 
         self.current_scope = self.current_scope.enclosing_scope
 

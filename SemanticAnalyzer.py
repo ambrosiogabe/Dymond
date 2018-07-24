@@ -58,6 +58,9 @@ class SemanticAnalyzer(NodeVisitor):
     def visit_Bool(self, node):
         pass
 
+    def visit_List(self, node):
+        pass
+
     def visit_UnaryOperator(self, node):
         self.visit(node.expr)
 
@@ -190,7 +193,7 @@ class SemanticAnalyzer(NodeVisitor):
         if(var_symbol is None):
             raise NameError(repr(var_name) + " is an undefined variable on line: " + str(node.token.get_line()))
 
-        right = self.visit(node.right)
+        self.visit(node.right)
 
     def visit_FunctionCall(self, node):
         function_name = node.func_name.value

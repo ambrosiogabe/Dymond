@@ -58,6 +58,8 @@ class Parser(object):
 
             if(self.current_token.get_value() in TokenType.ALL_TYPES):
                 children.append(self.variable_declarations())
+            elif(self.current_token.get_type() in TokenType.ALL_ADVANCED_TYPES):
+                children.append(self.advanced_variable_declaration())
             elif(self.current_token.get_type() == TokenType.FUNC):
                 children.append(self.function_declaration())
             elif(self.current_token.get_type() == TokenType.IF):
@@ -85,6 +87,8 @@ class Parser(object):
             child = None
             if(self.current_token.get_type() in TokenType.ALL_TYPES):
                 children.append(self.variable_declarations())
+            elif(self.current_token.get_type() in TokenType.ALL_ADVANCED_TYPES):
+                raise Exception("WE GOT A LIST")
             elif(self.current_token.get_type() == TokenType.FUNC):
                 raise SyntaxError("Cannot declare a function inside a block. Fix line: " + str(self.current_token.get_line()))
             elif(self.current_token.get_type() == TokenType.IF):
@@ -113,6 +117,7 @@ class Parser(object):
         var_decl = Variable(self.variable_declaration(type_node))
 
         return var_decl
+
 
     def function_declaration(self):
         """ function_declarations : function
@@ -262,6 +267,45 @@ class Parser(object):
         ]
         return var_declarations
 
+    def advanced_variable_declaration(self):
+        type = self.current_token.get_type()
+        type_node = Type(self.current_token)
+        self.eat(self.current_token.get_type())
+
+        id = self.current_token
+        var_node = Identifier(self.current_token)
+        self.eat(TokenType.IDENTIFIER)
+
+        if(self.current_token.get_type() == TokenType.EQUAL):
+            token = self.current_token
+            self.eat(TokenType.EQUAL)
+
+            if(type == TokenType.LIST):
+                self.eat(TokenType.LEFT_BRACKET)
+                right = self.recognize_list()
+                self.eat(TokenType.RIGHT_BRACKET)
+
+                assign_node = Assign(var_node, token, right)
+                var_decl = VarDecl(var_node, type_node, assign_node)
+                return Variable([var_decl])
+
+
+        # They are not assigning so we have to initialize an empty list
+        if(type == TokenType.LIST):
+            token = Token(TokenType.EQUAL, TokenType.EQUAL, self.current_token.get_line(), self.current_token.get_line())
+            right = List([])
+            assign_node = Assign(var_node, token, right)
+            return Variable([VarDecl(var_node, type_node, assign_node)])
+
+    def recognize_list(self):
+        tokens = []
+        while(self.current_token.get_type() != TokenType.RIGHT_BRACKET):
+            tokens.append(self.expr())
+
+            if(self.current_token.get_type() != TokenType.RIGHT_BRACKET):
+                self.eat(TokenType.COMMA)
+        return List(tokens)
+
     def decl_and_assignment_statement(self, var_node, token):
         """
         assignment_statement : variable ASSIGN expr
@@ -385,7 +429,7 @@ class Parser(object):
                 params = []
             else:
                 params = [self.expr()]
-                
+
             while(self.current_token.get_type() == TokenType.COMMA):
                 self.eat(TokenType.COMMA)
                 param = self.expr()
@@ -583,6 +627,10 @@ class Parser(object):
         elif(token.get_type() == TokenType.STRING):
             self.eat(TokenType.STRING)
             return String(token)
+        elif(token.get_type() == TokenType.LIST):
+            self.eat(TokenType.LIST)
+            return List(token)
+
 
         raise SyntaxError("Error, unrecognized token: '" + str(token.get_value()) + "' on line: " + str(token.get_line()))
 
