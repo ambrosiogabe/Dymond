@@ -1,7 +1,8 @@
-Decimal my_decimal = toDecimal(input("Give me a number: "));
 
-Int my_int = 0;
-while(my_int < 100) {
-    print(my_int);
-    my_int++;
+
+for(Int i=0; i < 10; i++) {
+    for(Int j=0; j < 5; j++) {
+        print(j, " ");
+    }
+    print();
 }

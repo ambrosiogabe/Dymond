@@ -50,6 +50,13 @@ class WhileNode(AST):
         self.condition = condition
         self.true_block = true_block
 
+class ForNode(AST):
+    def __init__(self, variable, condition, incrementer, for_block):
+        self.variable = variable
+        self.condition = condition
+        self.incrementer = incrementer
+        self.for_block = for_block
+
 
 
 # These are the program properties
@@ -116,8 +123,8 @@ class FunctionCall(AST):
 
 # Native Functions Nodes
 class Print(AST):
-    def __init__(self, param):
-        self.param = param
+    def __init__(self, params):
+        self.params = params
 
 class ToString(AST):
     def __init__(self, param):

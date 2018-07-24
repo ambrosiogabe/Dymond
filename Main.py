@@ -31,7 +31,7 @@ def main():
         list += "'"
 
         if(tokens[i].get_value() != "\n"):
-            list += tokens[i].get_value()
+            list += str(tokens[i].get_value())
         else:
             list += "Newline"
 

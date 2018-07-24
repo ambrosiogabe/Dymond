@@ -97,32 +97,27 @@ class Lexer:
                 in_escape_sequence = True
                 self.cur_pos += 1
                 self.cur_column += 1
-                continue
+                symbol = self.input[self.cur_pos]
 
             if(in_escape_sequence):
                 if(Utils.is_end_of_escape_sequence(symbol)):
                     in_escape_sequence = False
                     if(symbol == "\\"):
                         entire_string += "\\"
-                        break
                     elif(symbol == '"'):
                         entire_string += "\""
-                        break
                     elif(symbol == "n"):
                         entire_string += "\n"
-                        break
                     elif(symbol == "r"):
                         entire_string += "\r"
-                        brea
                     elif(symbol == "t"):
                         entire_string += "\t"
-                        break
                     elif(symbol == "b"):
                         entire_string += "\b"
-                        break
                     elif(symobl == "f"):
                         entire_string += "\f"
-                        break
+                    else:
+                        raise SyntaxError("Unrecognized escape sequence, " +"\\" + symbol + ", on line: " + str(self.cur_line))
                 else:
                     raise SyntaxError("Unrecognized escape sequence, " +"\\" + symbol + ", on line: " + str(self.cur_line))
             else:

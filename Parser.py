@@ -91,6 +91,8 @@ class Parser(object):
                 children.append(self.if_statement())
             elif(self.current_token.get_type() == TokenType.WHILE):
                 children.append(self.while_loop())
+            elif(self.current_token.get_type() == TokenType.FOR):
+                children.append(self.for_loop())
             elif(self.current_token.get_type() == TokenType.RETURN):
                 break
             elif(self.current_token.get_type() != TokenType.RIGHT_BRACE):
@@ -195,25 +197,30 @@ class Parser(object):
     def for_loop(self):
         self.eat(TokenType.FOR)
         self.eat(TokenType.LEFT_PAREN)
+        type = None
 
         if(self.current_token.get_type() in TokenType.ALL_TYPES):
             type = Type(self.current_token)
             self.eat(self.current_token.get_type())
-            variable = self.variable_declaration(type)
-            print(variable)
+            variable = self.variable_declaration(type)[0]
 
         if(self.current_token.get_type() == TokenType.IN):
             print("IN LOOP")
         else:
             condition = self.expr()
             self.eat(TokenType.SEMI_COLON)
-            incrementer = self.expr()
+
+            id = Identifier(self.current_token)
+            self.eat(TokenType.IDENTIFIER)
+            incrementer = self.assignment_statement(id)
+
             self.eat(TokenType.RIGHT_PAREN)
             self.eat(TokenType.LEFT_BRACE)
             for_block = self.block()
             self.eat(TokenType.RIGHT_BRACE)
 
-            for_loop_node = ForLoop(variable, condition, incrementer)
+            for_loop_node = ForNode(variable, condition, incrementer, for_block)
+            return for_loop_node
 
 
     def parameter_declaration(self, type_node):
@@ -374,8 +381,16 @@ class Parser(object):
 
         self.eat(TokenType.LEFT_PAREN)
         if(function_name.value == "print"):
-            param = self.expr()
-            node = Print(param)
+            if(self.current_token.get_type() == TokenType.RIGHT_PAREN):
+                params = []
+            else:
+                params = [self.expr()]
+                
+            while(self.current_token.get_type() == TokenType.COMMA):
+                self.eat(TokenType.COMMA)
+                param = self.expr()
+                params.append(param)
+            node = Print(params)
         elif(function_name.value == "toString"):
             param = self.expr()
             node = ToString(param)
@@ -516,7 +531,14 @@ class Parser(object):
             token = self.current_token
             if(token.get_type() == TokenType.LESS):
                 self.eat(TokenType.LESS)
-                node = BinOp(left=node, op=token, right=self.factor())
+            elif(token.get_type() == TokenType.GREATER):
+                self.eat(TokenType.GREATER)
+            elif(token.get_type() == TokenType.LESS_OR_EQUAL):
+                self.eat(TokenType.LESS_OR_EQUAL)
+            elif(token.get_type() == TokenType.GREATER_OR_EQUAL):
+                self.eat(TokenType.GREATER_OR_EQUAL)
+
+            node = BinOp(left=node, op=token, right=self.factor())
 
         return node
 

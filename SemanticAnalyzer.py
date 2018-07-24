@@ -146,6 +146,23 @@ class SemanticAnalyzer(NodeVisitor):
         #print("LEAVE scope: while")
         self.current_scope = self.current_scope.enclosing_scope
 
+    def visit_ForNode(self, node):
+        self.current_scope.current_for += 1
+        for_scope = SymbolTable(
+            scope_name="for" + str(self.current_scope.current_for),
+            scope_level=self.current_scope.scope_level + 1,
+            enclosing_scope=self.current_scope
+        )
+        self.current_scope.children[for_scope.scope_name] = for_scope
+        self.current_scope = for_scope
+
+        self.visit(node.variable)
+
+        for child in node.for_block:
+            self.visit(child)
+
+        self.current_scope = self.current_scope.enclosing_scope
+
     def visit_VarDecl(self, node):
         type_name = node.type_node.value
         type_symbol = self.current_scope.lookup(type_name)
@@ -199,7 +216,8 @@ class SemanticAnalyzer(NodeVisitor):
     # Native Function calls
     ---------------------------"""
     def visit_Print(self, node):
-        self.visit(node.param)
+        for param in node.params:
+            self.visit(param)
 
     def visit_ToString(self, node):
         self.visit(node.param)

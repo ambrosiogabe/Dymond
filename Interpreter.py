@@ -237,13 +237,29 @@ class Interpreter(NodeVisitor):
 
         condition = self.visit(node.condition)
         while(condition):
-            self.current_scope.reset_multi_scope_vars()
+            self.current_scope.current_while.reset_multi_scope_vars()
             for child in node.true_block:
                 self.visit(child)
             condition = self.visit(node.condition)
 
+        self.current_scope = self.current_scope.enclosing_scope
+
+    def visit_ForNode(self, node):
+        self.current_scope.current_for += 1
+        for_scope = self.current_scope.children["for" + str(self.current_scope.current_for)]
+        self.current_scope = for_scope
+
+        self.visit(node.variable)
+        condition = self.visit(node.condition)
+        while(condition):
+            self.current_scope.reset_multi_scope_vars()
+            self.visit(node.incrementer)
+            for child in node.for_block:
+                self.visit(child)
+            condition = self.visit(node.condition)
 
         self.current_scope = self.current_scope.enclosing_scope
+
 
 
     def visit_FunctionCall(self, node):
@@ -263,12 +279,13 @@ class Interpreter(NodeVisitor):
     # Native function calls
     ---------------------"""
     def visit_Print(self, node):
-        param = self.visit(node.param)
-        if(param is None):
+        params = node.params
+        if(len(params) == 0):
             print()
-            return
-
-        print(param)
+        elif(len(params) == 1):
+            print(self.visit(params[0]))
+        elif(len(params) == 2):
+            print(self.visit(params[0]), end=self.visit((params[1])))
 
     def visit_ToString(self, node):
         param = self.visit(node.param)
