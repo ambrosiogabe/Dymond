@@ -25,23 +25,32 @@ def run_ide():
     print(": Play around a little in this nice IDE type simple statements in and we will process them :)")
     print(": Type exit() to exit")
     user_in = ""
+    total_user_in = ""
+
     while user_in != "exit()":
         user_in = input(">>> ")
 
         if(user_in == "exit()"):
             break
 
-        lexer = Lexer(user_in)
-        se_parser = Parser(lexer, "ide")
-        semantic_analyzer = SemanticAnalyzer(se_parser)
-        semantic_analyzer.analyze()
+        try:
+            test = total_user_in + user_in
 
-        lexer = Lexer(user_in)
-        in_parser = Parser(lexer, "ide")
-        semantic_analyzer.current_scope.reset_multi_scope_vars()
-        interpreter = Interpreter(in_parser, semantic_analyzer.current_scope)
-        result = interpreter.interpret()
-        print(result)
+            lexer = Lexer(test)
+            se_parser = Parser(lexer, "ide")
+            semantic_analyzer = SemanticAnalyzer(se_parser)
+
+            semantic_analyzer.analyze()
+            lexer = Lexer(test)
+            in_parser = Parser(lexer, "ide")
+            semantic_analyzer.current_scope.reset_multi_scope_vars()
+            interpreter = Interpreter(in_parser, semantic_analyzer.current_scope)
+            interpreter.interpret()
+
+            if "print(" not in user_in and "input(" not in user_in:
+                total_user_in += "\n" + user_in
+        except Exception as ex:
+            print(ex)
 
 
 def main():
