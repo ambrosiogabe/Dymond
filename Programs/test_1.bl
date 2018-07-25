@@ -1,5 +1,0 @@
-pi = 3.14;
-radius = 3;
-area = pi * radius * radius;
-# This is the area of a circle
-yay = radius / 2;

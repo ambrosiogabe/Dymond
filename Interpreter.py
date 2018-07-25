@@ -205,7 +205,7 @@ class Interpreter(NodeVisitor):
         else:
             return val
 
-    def visit_EmptyProgram(self, node):
+    def visit_EmptyProgram(self):
         return
 
     def visit_FuncDecl(self, node):
