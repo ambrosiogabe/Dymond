@@ -10,11 +10,43 @@ import traceback
 def main():
     program_name, file_name = argv
     working_directory = os.getcwd()
-    #print(working_directory)
 
-    file_name = os.path.join(working_directory, file_name)
+    if(file_name != "ide"):
+        file_name = os.path.join(working_directory, file_name)
 
-    #print(file_name)
+        lexer = Lexer(open(file_name, "r").read())
+        se_parser = Parser(lexer, "input")
+        semantic_analyzer = SemanticAnalyzer(se_parser)
+        semantic_analyzer.analyze()
+
+        lexer = Lexer(open(file_name, "r").read())
+        in_parser = Parser(lexer, "input")
+        semantic_analyzer.current_scope.reset_multi_scope_vars()
+        interpreter = Interpreter(in_parser, semantic_analyzer.current_scope)
+        result = interpreter.interpret()
+    else:
+        print(": Welcome to Dymond V0.0.0!")
+        print(": Play around a little in this nice IDE type simple statements in and we will process them :)")
+        print(": Type exit() to exit")
+        user_in = ""
+        while user_in != "exit()":
+            user_in = input(">>> ")
+
+            if(user_in == "exit()"):
+                break
+
+            lexer = Lexer(user_in)
+            se_parser = Parser(lexer, "ide")
+            semantic_analyzer = SemanticAnalyzer(se_parser)
+            semantic_analyzer.analyze()
+
+            lexer = Lexer(user_in)
+            in_parser = Parser(lexer, "ide")
+            semantic_analyzer.current_scope.reset_multi_scope_vars()
+            interpreter = Interpreter(in_parser, semantic_analyzer.current_scope)
+            result = interpreter.interpret()
+            print(result)
+
 
     """
     in_file = open("input.py", "r")
@@ -38,21 +70,11 @@ def main():
     print(list)
     """
 
-    lexer = Lexer(open(file_name, "r").read())
-    se_parser = Parser(lexer, "input")
-    semantic_analyzer = SemanticAnalyzer(se_parser)
-    semantic_analyzer.analyze()
-
-    lexer = Lexer(open(file_name, "r").read())
-    in_parser = Parser(lexer, "input")
-    semantic_analyzer.current_scope.reset_multi_scope_vars()
-    interpreter = Interpreter(in_parser, semantic_analyzer.current_scope)
-    result = interpreter.interpret()
-
 if __name__ == "__main__":
     try:
         main()
     except Exception as ex:
-        traceback.print_exc()
+        print(ex)
+        #traceback.print_exc()
     finally:
         input("Press enter to exit...")
