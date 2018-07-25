@@ -5,6 +5,7 @@ from Interpreter import Interpreter
 from SemanticAnalyzer import SemanticAnalyzer
 from sys import argv
 import os
+import traceback
 
 def main():
     program_name, file_name = argv
@@ -49,5 +50,9 @@ def main():
     result = interpreter.interpret()
 
 if __name__ == "__main__":
-    main()
-    input("Press enter to exit...")
+    try:
+        main()
+    except Exception as ex:
+        traceback.print_exc()
+    finally:
+        input("Press enter to exit...")

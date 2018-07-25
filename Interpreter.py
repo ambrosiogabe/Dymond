@@ -190,6 +190,8 @@ class Interpreter(NodeVisitor):
             type_of_value = "Decimal"
         elif(type_of_value == "list"):
             type_of_value = "List"
+        elif(type_of_value == "bool"):
+            type_of_value = "Bool"
 
         if(type_of_value != type_of_symbol):
             raise TypeError("Invalid type. Cannot assign '" + type_of_value + "' to a type of '" + str(type_of_symbol) + "' on line: " + str(node.token.get_line()))
@@ -246,7 +248,7 @@ class Interpreter(NodeVisitor):
 
         condition = self.visit(node.condition)
         while(condition):
-            self.current_scope.current_while.reset_multi_scope_vars()
+            self.current_scope.reset_multi_scope_vars()
             for child in node.true_block:
                 self.visit(child)
             condition = self.visit(node.condition)

@@ -1,1 +1,37 @@
-print("WORKED");
+Int my_int = 0;
+Decimal my_decimal = 3e10;
+Decimal my_other_decimal = 3.14;
+Bool my_bool = True;
+Bool my_other_bool = False;
+
+for(Int i=0; i < 10; i++) {
+  print(i);
+}
+print("\n\n");
+
+if(my_int == 0) {
+  print(toString(my_int) + "\n");
+}
+
+if(my_int == 10) {
+  #do nothing because it doesn't
+} else {
+  print(my_int);
+}
+
+while(my_int < 10) {
+  print(my_int);
+  my_int++;
+}
+print("\n\n");
+
+String user_in = input("Type some stuff in: ");
+if(user_in == "Hi") {
+  print("Hi back :)");
+}
+
+Int user_in_cast_to_int = toInt(input("Type an integer: "));
+print(user_in_cast_to_int + 4);
+
+Decimal dec = toDecimal(input("Type a decimal: "));
+print(dec * 3.4);
