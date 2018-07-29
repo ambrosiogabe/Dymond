@@ -1,4 +1,4 @@
-package lexer;
+package dymond;
 
 import java.io.BufferedReader;
 import java.io.IOException;

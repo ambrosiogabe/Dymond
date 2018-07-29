@@ -1,11 +1,11 @@
-package lexer;
+package dymond;
+
+import static dymond.TokenType.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static lexer.TokenType.*;
 
 public class Scanner {
 	  private static final Map<String, TokenType> keywords;

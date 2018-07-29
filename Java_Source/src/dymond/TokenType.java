@@ -1,4 +1,4 @@
-package lexer;
+package dymond;
 
 public enum TokenType {
 	// Single character tokens
@@ -16,7 +16,7 @@ public enum TokenType {
 	IDENTIFIER, STRING, NUMBER,
 	
 	// Keywords
-	AND, CLASS, ELSE, FALSE, FUNC, FOR, IF, NIL, OR,
+	AND, CLASS, ELSE, FALSE, FUNC, FOR, IF, NULL, OR,
 	PRINT, RETURN, SUPER, THIS, TRUE, VAR, WHILE,
 	
 	EOF
