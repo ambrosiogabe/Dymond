@@ -19,7 +19,7 @@ public class Scanner {
 	    keywords.put("for",    FOR);
 	    keywords.put("func",   FUNC);
 	    keywords.put("if",     IF);
-	    keywords.put("nil",    NIL);
+	    keywords.put("nil",    NULL);
 	    keywords.put("or",     OR);
 	    keywords.put("print",  PRINT);
 	    keywords.put("return", RETURN);
@@ -63,6 +63,8 @@ public class Scanner {
 			case '{': addToken(LEFT_BRACE); break;
 			case '}': addToken(RIGHT_BRACE); break;
 			case ',': addToken(COMMA); break;
+			case '?': addToken(QUESTION); break;
+			case ':': addToken(COLON); break;
 			case '.': 
 				if(isDigit(peek())) {
 					number();

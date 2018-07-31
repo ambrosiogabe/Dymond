@@ -7,6 +7,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+import dymond.Parser;
 
 public class Dymond {
 	
@@ -43,10 +44,12 @@ public class Dymond {
 	private static void run(String source) {
 		Scanner scanner = new Scanner(source);
 		List<Token> tokens = scanner.scanTokens();
+		Parser parser = new Parser(tokens);
+		Expr expression = parser.parse();
 		
-		for (Token token : tokens) {
-			System.out.println(tokens);
-		}
+		if (hadError) return;
+		
+		System.out.println(new AstPrinter().print(expression));
 	}
 	
 	public static void error(int line, String message, String lineText, int column) {
@@ -56,8 +59,18 @@ public class Dymond {
 	
 	private static void report(int line, String where, String message, String lineText, int column) {
 		String error = "[line " + line + "] Error " + where + ": " + message + "\n";
-		error += "    " + lineText + "\n";
+		error += "    " + line + ".| " + lineText + "\n";
 		error += "    ";
+		if(line < 10) {
+			error += "    ";
+		} else if(line < 100) {
+			error += "     ";
+		} else if(line < 1000) {
+			error += "      ";
+		} else {
+			error += "       ";
+		}
+		
 		for(int i=0; i < column; i++) {
 			error += " ";
 		}

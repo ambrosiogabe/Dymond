@@ -1,12 +1,12 @@
 package dymond;
 
 public class Token {
-	private final TokenType type;
+	public final TokenType type;
 	public final String lexeme;
-	private final Object literal;
-	private final int line;
-	private final int column;
-	private final String lineText;
+	public final Object literal;
+	public final int line;
+	public final int column;
+	public final String lineText;
 	
 	public Token(TokenType type, String lexeme, Object literal, int line, String lineText, int column) {
 		this.type = type;
