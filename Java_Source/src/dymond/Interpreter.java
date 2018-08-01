@@ -2,17 +2,88 @@ package dymond;
 
 import static dymond.TokenType.*;
 
+import java.util.List;
+
 import dymond.Expr.Ternary;
 
-public class Interpreter implements Expr.Visitor<Object> {
+public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
+	private Environment environment = new Environment();
 	
-	public void interpret(Expr expression) {
+	public void interpret(List<Stmt> statements) {
 		try {
-			Object value = evaluate(expression);
-			System.out.println(stringify(value));
+			for(Stmt statement : statements) {
+				execute(statement);
+			}
 		} catch (RuntimeError error) {
 			Dymond.runtimeError(error);
 		}
+	}
+	
+	@Override 
+	public Object visitAssignExpr(Expr.Assign expr) {
+		Object left = environment.get(expr.name, true);
+		Object right = evaluate(expr.value);
+		Object finalValue = null;
+		
+		if(left == null && expr.operator.type != EQUAL) {
+			throw new RuntimeError(expr.name, "Undefined variable '" + expr.name.lexeme + "'."); 
+		}
+		
+		switch(expr.operator.type) {
+			case PLUS_EQUAL:
+				if (left instanceof String && right instanceof String) finalValue = (String)left + (String)right;
+				else if (left instanceof Double && right instanceof Double) finalValue = (Double)left + (Double)right;
+				else if(left instanceof Double && right instanceof String || left instanceof String && right instanceof Double) {
+					if (left instanceof Double) left = stringify(left);
+					if (right instanceof Double) right = stringify(right);
+					finalValue = (String)left + (String)right;
+				} else throw new RuntimeError(expr.operator, "Operands may be comprised of numbers and strings only.");
+				break;
+			case MINUS_EQUAL:
+				if (left instanceof Double && right instanceof Double) finalValue = (Double)left - (Double)right;
+				else throw new RuntimeError(expr.operator, "Operands must be two numbers.");
+				break;
+			case MODULO_EQUAL:
+				if (left instanceof Double && right instanceof Double) finalValue = (Double)left % (Double)right;
+				else throw new RuntimeError(expr.operator, "Operands must be two numbers.");
+				break;
+		}
+		
+		if(finalValue == null && right != null) {
+			finalValue = right;
+		}
+		
+		environment.assign(expr.name, finalValue);
+		return finalValue;
+	}
+	
+	@Override
+	public Void visitVarStmt(Stmt.Var stmt) {
+		Object value = null;
+		if(stmt.initializer != null) {
+			value = evaluate(stmt.initializer);
+		}
+		
+		environment.define(stmt.name.lexeme, value);
+		return null;
+	}
+	
+	@Override
+	public Object visitVariableExpr(Expr.Variable expr) {
+		return environment.get(expr.name, false);
+	}
+	
+	@Override
+	public Void visitExpressionStmt(Stmt.Expression stmt) {
+		evaluate(stmt.expression);
+		return null;
+	}
+	
+	@Override
+	public Void visitPrintStmt(Stmt.Print stmt) {
+		Object value = evaluate(stmt.expression);
+		System.out.println(stringify(value));
+		return null;
 	}
 	
 	@Override
@@ -113,7 +184,7 @@ public class Interpreter implements Expr.Visitor<Object> {
 					return (String)left + (String)right;
 				}
 				
-				throw new RuntimeError(expr.operator, "Operands must be two numbers or two strings.");
+				throw new RuntimeError(expr.operator, "Operands may be comprised of numbers and strings only.");
 		}
 		
 		return null;
@@ -130,6 +201,10 @@ public class Interpreter implements Expr.Visitor<Object> {
 			return left;
 		}
 		return right;
+	}
+	
+	private void execute(Stmt stmt) {
+		stmt.accept(this);
 	}
 	
 	private void checkNumberOperands(Token operator, Object...operands) {

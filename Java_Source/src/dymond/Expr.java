@@ -3,14 +3,33 @@ package dymond;
 import java.util.List;
 public abstract class Expr{
 	public interface Visitor <R> {
+		R visitAssignExpr(Assign expr);
 		R visitBinaryExpr(Binary expr);
 		R visitTernaryExpr(Ternary expr);
 		R visitGroupingExpr(Grouping expr);
 		R visitLiteralExpr(Literal expr);
 		R visitUnaryExpr(Unary expr);
+		R visitVariableExpr(Variable expr);
 	}
 
 	abstract <R> R accept(Visitor<R> visitor);
+
+	public static class Assign extends Expr{
+		public Assign(Token name, Expr value, Token operator) {
+			this.name = name;
+			this.value = value;
+			this.operator = operator;
+		}
+
+		public <R> R accept(Visitor<R> visitor) {
+			return visitor.visitAssignExpr(this);
+		}
+
+
+		public final Token name;
+		public final Expr value;
+		public final Token operator;
+	}
 
 	public static class Binary extends Expr{
 		public Binary(Expr left, Token operator, Expr right) {
@@ -31,8 +50,8 @@ public abstract class Expr{
 
 	public static class Ternary extends Expr{
 		public Ternary(Expr left, Expr right, Expr condition) {
-			this.right = right;
 			this.left = left;
+			this.right = right;
 			this.condition = condition;
 		}
 
@@ -41,8 +60,8 @@ public abstract class Expr{
 		}
 
 
-		public final Expr right;
 		public final Expr left;
+		public final Expr right;
 		public final Expr condition;
 	}
 
@@ -85,5 +104,18 @@ public abstract class Expr{
 
 		public final Token operator;
 		public final Expr right;
+	}
+
+	public static class Variable extends Expr{
+		public Variable(Token name) {
+			this.name = name;
+		}
+
+		public <R> R accept(Visitor<R> visitor) {
+			return visitor.visitVariableExpr(this);
+		}
+
+
+		public final Token name;
 	}
 }

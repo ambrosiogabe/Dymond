@@ -1,5 +1,6 @@
 package dymond;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static dymond.TokenType.*;
@@ -14,14 +15,50 @@ public class Parser {
 		this.tokens = tokens;
 	}
 	
-	public Expr parse() {
+	// parse -> declaration* EOF
+	public List<Stmt> parse() {
+		List<Stmt> statements = new ArrayList<>();
 		try {
-			return expression();
+			while (!isAtEnd()) {
+				statements.add(declaration());
+			}
+			
+			return statements;
+		} catch(ParseError error) {
+			return statements;
+		}
+	}
+	
+	private Stmt declaration() {
+		try {
+			//if (match(VAR)) return varDeclaration();
+			
+			return statement();
 		} catch (ParseError error) {
+			synchronize();
 			return null;
 		}
 	}
 	
+	// statement -> exprStmt
+	//            | printStmt
+	private Stmt statement() {
+		if (match(PRINT)) return printStatement();
+		
+		return expressionStatement();
+	}
+	
+	private Stmt printStatement() {
+		Expr value = expression();
+		consume(SEMICOLON, "Expect ';' after value.");
+		return new Stmt.Print(value);
+	}
+	
+	private Stmt expressionStatement() {
+		Expr expr = expression();
+		consume(SEMICOLON, "Expect ';' after value.");
+		return new Stmt.Expression(expr);
+	}
 	
 	private Expr expression() {
 		return comma();
@@ -29,10 +66,30 @@ public class Parser {
 	
 	// comma -> ternary equality
 	private Expr comma() {
-		Expr expr = ternary();
+		Expr expr = assignment();
 		
 		while (match(COMMA)) {
-			expr = ternary();
+			expr = assignment();
+		}
+		
+		return expr;
+	}
+	
+	// assignment -> identifier = assignment
+	//             | ternary
+	private Expr assignment() {
+		Expr expr = ternary();
+		
+		if (match(EQUAL, PLUS_EQUAL, MINUS_EQUAL, MODULO_EQUAL)) {
+			Token equals = previous();
+			Expr value = assignment();
+			
+			if (expr instanceof Expr.Variable) {
+				Token name = ((Expr.Variable)expr).name;
+				return new Expr.Assign(name,  value, equals);
+			}
+			
+			error(equals, "Invalid assignment target.");
 		}
 		
 		return expr;
@@ -133,10 +190,8 @@ public class Parser {
 		if (match(FALSE)) return new Expr.Literal(false);
 		if (match(TRUE)) return new Expr.Literal(true);
 		if (match(NULL)) return new Expr.Literal(null);
-		
-		if (match(NUMBER, STRING)) {
-			return new Expr.Literal(previous().literal);
-		}
+		if (match(IDENTIFIER)) return new Expr.Variable(previous());
+		if (match(NUMBER, STRING)) return new Expr.Literal(previous().literal);
 		
 		if (match(LEFT_PAREN)) {
 			Expr expr = expression();
@@ -155,7 +210,7 @@ public class Parser {
 	
 	private Token consume(TokenType type, String message) {
 		if (check(type)) return advance();
-		throw error(peek(), message);
+		throw error(previous(), message);
 	}
 	
 	private ParseError error(Token token, String message) {
@@ -172,7 +227,6 @@ public class Parser {
 			switch (peek().type) {
 				case CLASS:
 				case FUNC:
-				case VAR:
 				case FOR:
 				case IF:
 				case WHILE:
