@@ -15,17 +15,17 @@ public class Scanner {
 	    keywords.put("and",    AND);
 	    keywords.put("class",  CLASS);
 	    keywords.put("else",   ELSE);
-	    keywords.put("false",  FALSE);
+	    keywords.put("False",  FALSE);
 	    keywords.put("for",    FOR);
 	    keywords.put("func",   FUNC);
 	    keywords.put("if",     IF);
-	    keywords.put("nil",    NULL);
+	    keywords.put("Null",    NULL);
 	    keywords.put("or",     OR);
 	    keywords.put("print",  PRINT);
 	    keywords.put("return", RETURN);
 	    keywords.put("super",  SUPER);
 	    keywords.put("this",   THIS);
-	    keywords.put("true",   TRUE);
+	    keywords.put("True",   TRUE);
 	    keywords.put("var",    VAR);
 	    keywords.put("while",  WHILE);
 	  }
@@ -46,6 +46,8 @@ public class Scanner {
 	}
 	
 	public List<Token> scanTokens() {
+		currentLine = scanWholeLine();
+		
 		while (!isAtEnd()) {
 			start = current;
 			scanToken();
@@ -72,14 +74,35 @@ public class Scanner {
 				}
 				addToken(DOT); 
 				break;
-			case '-': addToken(MINUS); break;
-			case '+': addToken(PLUS); break;
 			case ';': addToken(SEMICOLON); break;
 			case '*': addToken(STAR); break;
 			case '!': addToken(match('=') ? BANG_EQUAL : BANG); break;
 			case '=': addToken(match('=') ? EQUAL_EQUAL : EQUAL);break;
 			case '<': addToken(match('=') ? LESS_EQUAL : LESS); break;
 			case '>': addToken(match('=') ? GREATER_EQUAL : GREATER); break;
+			case '%': addToken(match('=') ? MODULO_EQUAL : MODULO); break;
+			case '-': 
+				if(match('=')) {
+					addToken(MINUS_EQUAL);
+					break;
+				} else if(match('-')) {
+					addToken(MINUS_MINUS);
+					break;
+				} else {
+					addToken(MINUS);
+					break;
+				}
+			case '+': 
+				if(match('=')) {
+					addToken(PLUS_EQUAL);
+					break;
+				} else if(match('+')) {
+					addToken(PLUS_PLUS);
+					break;
+				} else {
+					addToken(PLUS);
+					break;
+				}
 			case '/': 
 				if (match('/')) {
 					addToken(INTEGER_DIV);
@@ -106,7 +129,7 @@ public class Scanner {
 				break;
 			case '\n':
 				line++;
-				currentLine = "";
+				currentLine = scanWholeLine();
 				currentColumn = -1;
 				break;
 			case '"': string(); break;
@@ -130,8 +153,6 @@ public class Scanner {
 		TokenType type = keywords.get(text);
 		if (type == null) type = IDENTIFIER;
 		addToken(type);
-		
-		addToken(IDENTIFIER);
 	}
 	
 	private void string() {
@@ -204,8 +225,19 @@ public class Scanner {
 	private char advance() {
 		current++;
 		currentColumn++;
-		currentLine += source.charAt(current - 1);
 		return source.charAt(current - 1);
+	}
+	
+	private String scanWholeLine() {
+		int myCurrent = current;
+		String myCurrentLine = "";
+		while(myCurrent < source.length()) {
+			if(source.charAt(myCurrent) == '\n') break;
+			
+			myCurrentLine += source.charAt(myCurrent);
+			myCurrent++;
+		}
+		return myCurrentLine;
 	}
 	
 	private char peek() {

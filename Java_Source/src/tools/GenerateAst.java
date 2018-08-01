@@ -14,6 +14,7 @@ public class GenerateAst {
 		String outputDir = args[0];
 		defineAst(outputDir, "Expr", Arrays.asList(
 				"Binary   : Expr left, Token operator, Expr right",
+				"Ternary  : Expr left, Expr right, Expr condition",
 				"Grouping : Expr expression",
 				"Literal  : Object value",
 				"Unary    : Token operator, Expr right"
@@ -24,7 +25,7 @@ public class GenerateAst {
 		String path = outputDir + "/" + baseName + ".java";
 		PrintWriter writer = new PrintWriter(path, "UTF-8");
 		
-		writer.println("package lexer;");
+		writer.println("package dymond;");
 		writer.println("");
 		writer.println("import java.util.List;");
 		writer.println("public abstract class " + baseName + "{");

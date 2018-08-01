@@ -7,13 +7,17 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 import dymond.Parser;
 
 public class Dymond {
 	
-	private static boolean hadError = false;
+	private static final Interpreter interpreter = new Interpreter();
+	public static boolean hadError = false;
+	public static boolean hadRuntimeError = false;
 
-	public static void main(String[] args) throws IOException {		
+	public static void main(String[] args) throws IOException, InterruptedException {		
 		if (args.length > 1) {
 			System.out.println("Usage: dymond [script]");
 			System.exit(64);
@@ -27,17 +31,23 @@ public class Dymond {
 	private static void runFile(String path) throws IOException {
 		byte[] bytes = Files.readAllBytes(Paths.get(path));
 		run(new String(bytes, Charset.defaultCharset()));
-		if(hadError) System.exit(65);
+		if (hadError) System.exit(65);
+		if (hadRuntimeError) System.exit(70);;
 	}
 	
-	private static void runPrompt() throws IOException {
+	private static void runPrompt() throws IOException, InterruptedException {
 		InputStreamReader input = new InputStreamReader(System.in);
 		BufferedReader reader = new BufferedReader(input);
 		
 		for(;;) {
 			System.out.print(">>> ");
 			run(reader.readLine());
+			if(hadError || hadRuntimeError) {
+				TimeUnit.SECONDS.sleep((long) .4);
+			}
+			
 			hadError = false;
+			hadRuntimeError = false;
 		}
 	}
 	
@@ -49,11 +59,41 @@ public class Dymond {
 		
 		if (hadError) return;
 		
-		System.out.println(new AstPrinter().print(expression));
+		interpreter.interpret(expression);
 	}
 	
 	public static void error(int line, String message, String lineText, int column) {
 		report(line, "", message, lineText, column);
+	}
+	
+	public static void runtimeError(RuntimeError error) {
+		String message = error.getMessage();
+		String where = "";
+		String lineText = error.token.lineText;
+		int line = error.token.line;
+		int column = error.token.column;
+		
+		String errorText = "[line " + line + "] Error " + where + ": " + message + "\n";
+		errorText += "    	" + line + ".| " + lineText + "\n";
+		errorText += "    	";
+		if(line < 10) {
+			errorText += "    ";
+		} else if(line < 100) {
+			errorText += "     ";
+		} else if(line < 1000) {
+			errorText += "      ";
+		} else {
+			errorText += "       ";
+		}
+		
+		for(int i=0; i < column; i++) {
+			errorText += " ";
+		}
+		errorText += "^-- Here.";
+		
+		
+		System.err.println(errorText);
+		hadRuntimeError = true;
 	}
 	
 	

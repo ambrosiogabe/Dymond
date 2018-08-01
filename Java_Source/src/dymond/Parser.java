@@ -41,7 +41,15 @@ public class Parser {
 	private Expr ternary() {
 		Expr expr = equality();
 		
-
+		if (match(QUESTION)) {
+			Expr left = equality();
+			
+			consume(COLON, "Expected ':' a colon.");
+			
+			Expr right = expression();
+			expr = new Expr.Ternary(left, right, expr);
+		}
+		
 		return expr;
 	}
 	
@@ -52,6 +60,7 @@ public class Parser {
 		while (match(BANG_EQUAL, EQUAL_EQUAL)) {
 			Token operator = previous();
 			Expr right = comparison();
+
 			expr = new Expr.Binary(expr,  operator,  right);
 		}
 		
@@ -86,7 +95,7 @@ public class Parser {
 	private Expr multiplication() {
 		Expr expr = unary();
 		
-		while (match(DIV, STAR, INTEGER_DIV)) {
+		while (match(DIV, STAR, INTEGER_DIV, MODULO)) {
 			Token operator = previous();
 			Expr right = unary();
 			expr = new Expr.Binary(expr, operator, right);
@@ -98,13 +107,25 @@ public class Parser {
 	// unary -> ( "!" | "-" ) unary
 	//       | primary ;
 	private Expr unary() {
-		if (match(BANG, MINUS)) {
+		if (match(BANG, MINUS, PLUS_PLUS, MINUS_MINUS)) {
 			Token operator = previous();
-			Expr right = unary();
+			Expr right = postfix();
 			return new Expr.Unary(operator, right);
 		}
 		
-		return primary();
+		return postfix();
+	}
+	
+	// postfix ++ --
+	private Expr postfix() {
+		Expr expr = primary();
+		
+		if (match(PLUS_PLUS, MINUS_MINUS)) {
+			Token operator = previous();
+			return new Expr.Unary(operator, expr);
+		}
+		
+		return expr;
 	}
 	
 	// primary -> NUMBER | STRING | "False" | "True" | "Null" | "(" expression ")" ;

@@ -3,6 +3,7 @@ package dymond;
 import dymond.Expr.Binary;
 import dymond.Expr.Grouping;
 import dymond.Expr.Literal;
+import dymond.Expr.Ternary;
 import dymond.Expr.Unary;
 
 public class AstPrinter implements Expr.Visitor<String> {
@@ -52,5 +53,10 @@ public class AstPrinter implements Expr.Visitor<String> {
 		builder.append(")");
 		
 		return builder.toString();
+	}
+
+	@Override
+	public String visitTernaryExpr(Ternary expr) {
+		return parenthesize("?:", expr.condition, expr.right, expr.left);
 	}
 }
