@@ -22,6 +22,7 @@ public class Dymond {
 			System.out.println("Usage: dymond [script]");
 			System.exit(64);
 		} else if (args.length == 1) {
+			//runPrompt(); // Uncomment to run prompt
 			runFile(args[0]);
 		} else {
 			runPrompt();
@@ -30,7 +31,7 @@ public class Dymond {
 	
 	private static void runFile(String path) throws IOException {
 		byte[] bytes = Files.readAllBytes(Paths.get(path));
-		run(new String(bytes, Charset.defaultCharset()));
+		run(new String(bytes, Charset.defaultCharset()), false);
 		if (hadError) System.exit(65);
 		if (hadRuntimeError) System.exit(70);;
 	}
@@ -41,7 +42,7 @@ public class Dymond {
 		
 		for(;;) {
 			System.out.print(">>> ");
-			run(reader.readLine());
+			run(reader.readLine(), true);
 			if(hadError || hadRuntimeError) {
 				TimeUnit.SECONDS.sleep((long) .4);
 			}
@@ -51,15 +52,15 @@ public class Dymond {
 		}
 	}
 	
-	private static void run(String source) {
+	private static void run(String source, boolean repl) {
 		Scanner scanner = new Scanner(source);
 		List<Token> tokens = scanner.scanTokens();
-		Parser parser = new Parser(tokens);
+		Parser parser = new Parser(tokens, repl);
 		List<Stmt> statements = parser.parse();
 		
 		if (hadError) return;
 		
-		interpreter.interpret(statements);
+		interpreter.interpret(statements, repl);
 	}
 	
 	public static void error(int line, String message, String lineText, int column) {

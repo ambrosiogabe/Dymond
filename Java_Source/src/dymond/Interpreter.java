@@ -8,9 +8,12 @@ import dymond.Expr.Ternary;
 
 public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 	private Environment environment = new Environment();
+	private boolean repl;
 	
-	public void interpret(List<Stmt> statements) {
+	public void interpret(List<Stmt> statements, boolean repl) {
 		try {
+			this.repl = repl;
+			
 			for(Stmt statement : statements) {
 				execute(statement);
 			}
@@ -19,9 +22,52 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 		}
 	}
 	
+	@Override
+	public Object visitLogicalExpr(Expr.Logical expr) {
+		Object left = evaluate(expr.left);
+		
+		if (expr.operator.type == OR) {
+			if (isTruthy(left)) return left;
+		} else {
+			if (!isTruthy(left)) return left;
+		}
+		
+		return evaluate(expr.right);
+	}
+	
+	@Override
+	public Void visitIfStmt(Stmt.If stmt) {
+		if (isTruthy(evaluate(stmt.condition))) {
+			execute(stmt.thenBranch);
+		} else if (stmt.elseBranch != null) {
+			execute(stmt.elseBranch);
+		}
+		return null;
+	}
+	
+	@Override 
+	public Void visitBlockStmt(Stmt.Block stmt) {
+		executeBlock(stmt.statements, new Environment(environment));
+		
+		return null;
+	}
+	
+	public void executeBlock(List<Stmt> statements, Environment environment) {
+		Environment previous = this.environment;
+		try {
+			this.environment = environment;
+			
+			for (Stmt statement : statements) {
+				execute(statement);
+			}
+		} finally {
+			this.environment = previous;
+		}
+	}
+	
 	@Override 
 	public Object visitAssignExpr(Expr.Assign expr) {
-		Object left = environment.get(expr.name, true);
+		Object left = environment.get(expr.name);
 		Object right = evaluate(expr.value);
 		Object finalValue = null;
 		
@@ -47,6 +93,10 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 				if (left instanceof Double && right instanceof Double) finalValue = (Double)left % (Double)right;
 				else throw new RuntimeError(expr.operator, "Operands must be two numbers.");
 				break;
+			case TIMES_EQUAL:
+				if (left instanceof Double && right instanceof Double) finalValue = (Double)left * (Double)right;
+				else throw new RuntimeError(expr.operator, "Operands must be two numbers.");
+				break;
 		}
 		
 		if(finalValue == null && right != null) {
@@ -70,12 +120,14 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 	
 	@Override
 	public Object visitVariableExpr(Expr.Variable expr) {
-		return environment.get(expr.name, false);
+		return environment.get(expr.name);
 	}
 	
 	@Override
 	public Void visitExpressionStmt(Stmt.Expression stmt) {
-		evaluate(stmt.expression);
+		Object result = evaluate(stmt.expression);
+		if(repl)
+			System.out.println(stringify(result));
 		return null;
 	}
 	

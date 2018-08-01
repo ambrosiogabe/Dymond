@@ -19,18 +19,14 @@ public class Environment {
 		values.put(name, value);
 	}
 	
-	public Object get(Token name, boolean assign) {
+	public Object get(Token name) {
 		if (values.containsKey(name.lexeme)) {
 			return values.get(name.lexeme);
 		}
 		
-		if (enclosing != null && !assign) return enclosing.get(name, false);
+		if (enclosing != null) return enclosing.get(name);
 		
-		if(!assign)
-			throw new RuntimeError(name, "Undefined variable '" + name.lexeme + "'.");
-		
-		values.put(name.lexeme, null);
-		return null;
+		throw new RuntimeError(name, "Undefined variable '" + name.lexeme + "'.");
 	}
 	
 	public void assign(Token name, Object value) {

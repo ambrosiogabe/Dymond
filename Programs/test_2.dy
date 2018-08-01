@@ -1,0 +1,3 @@
+print "hi" or 2;
+
+print Null or "Nilllll";

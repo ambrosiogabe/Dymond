@@ -27,6 +27,7 @@ public class Scanner {
 	    keywords.put("this",   THIS);
 	    keywords.put("True",   TRUE);
 	    keywords.put("while",  WHILE);
+	    keywords.put("var", VAR);
 	  }
 	  
 	private final String source;
@@ -74,7 +75,7 @@ public class Scanner {
 				addToken(DOT); 
 				break;
 			case ';': addToken(SEMICOLON); break;
-			case '*': addToken(STAR); break;
+			case '*': addToken(match('=') ? TIMES_EQUAL : STAR); break;
 			case '!': addToken(match('=') ? BANG_EQUAL : BANG); break;
 			case '=': addToken(match('=') ? EQUAL_EQUAL : EQUAL);break;
 			case '<': addToken(match('=') ? LESS_EQUAL : LESS); break;
@@ -105,6 +106,9 @@ public class Scanner {
 			case '/': 
 				if (match('/')) {
 					addToken(INTEGER_DIV);
+					break;
+				} else if (match('=')) {
+					addToken(DIV_EQUAL);
 					break;
 				} else if (match('*')) {
 					while(peek() != '*' && peekNext() != '/') {
