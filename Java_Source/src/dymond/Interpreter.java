@@ -2,12 +2,17 @@ package dymond;
 
 import static dymond.TokenType.*;
 import java.util.List;
+import java.util.Map;
+
 import dymond.Expr.Ternary;
 import java.util.ArrayList;
+import java.util.HashMap;
+
 
 public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 	final Environment globals = new Environment();
 	private Environment environment = globals;
+	private final Map<Expr, Integer> locals = new HashMap<>();
 	private boolean repl;
 	
 	public Interpreter() {
@@ -52,7 +57,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 	
 	@Override
 	public Void visitFunctionStmt(Stmt.Function stmt) {
-		DymondFunction function = new DymondFunction(stmt);
+		DymondFunction function = new DymondFunction(stmt, environment);
 		environment.define(stmt.name.lexeme,  function);
 		return null;
 	}
@@ -75,7 +80,10 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 			throw new RuntimeError(expr.paren, "Expected " + function.arity() + " arguments, but got " + arguments.size() + ".");
 		}
 		
-		return function.call(this, arguments);
+		if(callee.toString().equals("<native fn>"))
+			return function.call(this, arguments, expr);
+		else
+			return function.call(this,  arguments);
 	}
 	
 	@Override 
@@ -151,7 +159,10 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 	
 	@Override 
 	public Object visitAssignExpr(Expr.Assign expr) {
-		Object left = environment.get(expr.name);
+		Integer distance = locals.get(expr);
+		Object left = null;
+		if (distance != null) left = environment.getAt(distance, expr.name.lexeme);
+		else left = globals.get(expr.name);
 		Object right = evaluate(expr.value);
 		Object finalValue = null;
 		
@@ -187,13 +198,20 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 			finalValue = right;
 		}
 		
-		environment.assign(expr.name, finalValue);
+		if (distance != null) {
+			environment.assignAt(distance, expr.name, finalValue);
+		} else {
+			globals.assign(expr.name, finalValue);
+		}
 		return finalValue;
 	}
 	
 	@Override
 	public Object visitUnaryAssignExpr(Expr.UnaryAssign expr) {
-		Object left = environment.get(expr.name);
+		Integer distance = locals.get(expr);
+		Object left = null;
+		if (distance != null) left = environment.getAt(distance, expr.name.lexeme);
+		else left = globals.get(expr.name);
 		
 		switch(expr.operator.type) {
 			case PLUS_PLUS:
@@ -206,7 +224,11 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 				break;
 		}
 		
-		environment.assign(expr.name, left);
+		if (distance != null) {
+			environment.assignAt(distance, expr.name, left);
+		} else {
+			globals.assign(expr.name, left);
+		}
 		return left;
 	}
 	
@@ -223,7 +245,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 	
 	@Override
 	public Object visitVariableExpr(Expr.Variable expr) {
-		return environment.get(expr.name);
+		return lookUpVariable(expr.name, expr);
 	}
 	
 	@Override
@@ -345,6 +367,19 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 			return left;
 		}
 		return right;
+	}
+	
+	private Object lookUpVariable(Token name, Expr expr) {
+		Integer distance = locals.get(expr);
+		if (distance != null) {
+			return environment.getAt(distance, name.lexeme);
+		} else {
+			return globals.get(name);
+		}
+	}
+	
+	public void resolve(Expr expr, int depth) {
+		locals.put(expr, depth);
 	}
 	
 	private void execute(Stmt stmt) {

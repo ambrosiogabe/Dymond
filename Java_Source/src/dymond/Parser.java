@@ -102,7 +102,11 @@ public class Parser {
 	}
 	
 	private Stmt.Function function(String kind) {
-		Token name = consume(IDENTIFIER, "Expect " + kind + " name.");
+		Token name = null;
+		
+		if (check(IDENTIFIER))
+			name = consume(IDENTIFIER, "Expect " + kind + " name.");
+		
 		consume(LEFT_PAREN, "Expect '(' after " + kind + " name.");
 		List<Token> parameters = new ArrayList<>();
 		if (!check(RIGHT_PAREN)) {
@@ -228,7 +232,7 @@ public class Parser {
 	// assignment -> identifier = assignment
 	//             | ternary
 	private Expr assignment() {
-		Expr expr = ternary();
+		Expr expr = anonFunction();
 		
 		if (match(EQUAL, PLUS_EQUAL, MINUS_EQUAL, MODULO_EQUAL, TIMES_EQUAL, DIV_EQUAL)) {
 			Token equals = previous();
@@ -241,6 +245,14 @@ public class Parser {
 			
 			error(equals, "Invalid assignment target.");
 		}
+		
+		return expr;
+	}
+	
+	private Expr anonFunction() {
+		Expr expr = ternary();
+		
+		/* TODO implement anonymus functions*/
 		
 		return expr;
 	}
@@ -341,8 +353,11 @@ public class Parser {
 		if (match(BANG, MINUS, PLUS_PLUS, MINUS_MINUS)) {
 			Token operator = previous();
 			Expr right = postfix();
-			Token name = ((Expr.Variable)right).name;
-			return new Expr.UnaryAssign(name, operator);
+			if (right instanceof Expr.Variable) {
+				Token name = ((Expr.Variable)right).name;
+				return new Expr.UnaryAssign(name, operator);
+			} 
+			return new Expr.Unary(operator, right);
 		}
 		
 		return postfix();
@@ -353,9 +368,13 @@ public class Parser {
 		Expr expr = call();
 		
 		if (match(PLUS_PLUS, MINUS_MINUS)) {
-			Token name = ((Expr.Variable)expr).name;
 			Token operator = previous();
-			return new Expr.UnaryAssign(name, operator);
+			
+			if(expr instanceof Expr.Variable) { 
+				Token name = ((Expr.Variable)expr).name;
+				return new Expr.UnaryAssign(name, operator);
+			} 
+			return new Expr.Unary(operator, expr);
 		}
 		
 		return expr;

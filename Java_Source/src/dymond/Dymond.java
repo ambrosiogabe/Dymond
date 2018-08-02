@@ -60,6 +60,11 @@ public class Dymond {
 		
 		if (hadError) return;
 		
+		Resolver resolver = new Resolver(interpreter);
+		resolver.resolve(statements);
+		
+		if (hadError) return;
+		
 		interpreter.interpret(statements, repl);
 	}
 	
