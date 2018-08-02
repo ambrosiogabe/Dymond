@@ -1,25 +1,109 @@
 package dymond;
 
 import static dymond.TokenType.*;
-
 import java.util.List;
-
 import dymond.Expr.Ternary;
+import java.util.ArrayList;
 
 public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
-	private Environment environment = new Environment();
+	final Environment globals = new Environment();
+	private Environment environment = globals;
 	private boolean repl;
+	
+	public Interpreter() {
+		globals.defineNativeFunctions();
+	}
 	
 	public void interpret(List<Stmt> statements, boolean repl) {
 		try {
 			this.repl = repl;
 			
 			for(Stmt statement : statements) {
-				execute(statement);
+				try {
+					execute(statement);
+				} catch(BreakError err) {
+					throw new RuntimeError(err.token, "Break statement must be inside a loop.");
+				} catch(Next err) {
+					throw new RuntimeError(err.token, "Next statement must be inside a for-loop.");
+				}
 			}
 		} catch (RuntimeError error) {
 			Dymond.runtimeError(error);
 		}
+	}
+	
+	@Override 
+	public Void visitReturnStmt(Stmt.Return stmt) {
+		Object value = null;
+		if (stmt.value != null) value = evaluate(stmt.value);
+		
+		throw new Return(value);
+	}
+	
+	@Override
+	public Void visitBreakStmt(Stmt.Break stmt) {
+		throw new BreakError(stmt.keyword);
+	}
+	
+	@Override 
+	public Void visitNextStmt(Stmt.Next stmt) {
+		throw new Next(stmt.keyword);
+	}
+	
+	@Override
+	public Void visitFunctionStmt(Stmt.Function stmt) {
+		DymondFunction function = new DymondFunction(stmt);
+		environment.define(stmt.name.lexeme,  function);
+		return null;
+	}
+	
+	@Override 
+	public Object visitCallExpr(Expr.Call expr) {
+		Object callee = evaluate(expr.callee);
+		
+		List<Object> arguments = new ArrayList<>();
+		for (Expr argument : expr.arguments) {
+			arguments.add(evaluate(argument));
+		}
+		
+		if (!(callee instanceof DymondCallable)) {
+			throw new RuntimeError(expr.paren, "Can only call functions and classes.");			
+		}
+		
+		DymondCallable function = (DymondCallable)callee;
+		if (arguments.size() != function.arity()) {
+			throw new RuntimeError(expr.paren, "Expected " + function.arity() + " arguments, but got " + arguments.size() + ".");
+		}
+		
+		return function.call(this, arguments);
+	}
+	
+	@Override 
+	public Void visitWhileStmt(Stmt.While stmt) {
+		while (isTruthy(evaluate(stmt.condition))) {
+			try {
+				execute(stmt.body);
+			} catch(BreakError err) {
+				break;
+			}
+		}
+		
+		return null;
+	}
+	
+	@Override 
+	public Void visitForStmt(Stmt.For stmt) {
+		while (isTruthy(evaluate(stmt.condition))) {
+			try {
+				execute(stmt.body);
+			} catch(BreakError err) {
+				break;
+			} catch(Next err) {
+				execute(stmt.increment);
+			}
+		}
+		
+		return null;
 	}
 	
 	@Override
@@ -108,6 +192,25 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 	}
 	
 	@Override
+	public Object visitUnaryAssignExpr(Expr.UnaryAssign expr) {
+		Object left = environment.get(expr.name);
+		
+		switch(expr.operator.type) {
+			case PLUS_PLUS:
+				checkNumberOperand(expr.operator, left);
+				left = (double)left + 1;
+				break;
+			case MINUS_MINUS:
+				checkNumberOperand(expr.operator, left);
+				left = (double)left - 1;
+				break;
+		}
+		
+		environment.assign(expr.name, left);
+		return left;
+	}
+	
+	@Override
 	public Void visitVarStmt(Stmt.Var stmt) {
 		Object value = null;
 		if(stmt.initializer != null) {
@@ -132,13 +235,6 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 	}
 	
 	@Override
-	public Void visitPrintStmt(Stmt.Print stmt) {
-		Object value = evaluate(stmt.expression);
-		System.out.println(stringify(value));
-		return null;
-	}
-	
-	@Override
 	public Object visitLiteralExpr(Expr.Literal expr) {
 		return expr.value;
 	}
@@ -158,10 +254,6 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 				return -(double)right;
 			case BANG:
 				return !isTruthy(right);
-			case PLUS_PLUS:
-				return right = (double)right + 1;
-			case MINUS_MINUS:
-				return right = (double)right - 1;
 		}
 		
 		return null;
@@ -285,7 +377,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 		return true;
 	}
 	
-	private Object evaluate(Expr expr) {
+	public Object evaluate(Expr expr) {
 		return expr.accept(this);
 	}
 	

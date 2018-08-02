@@ -1,6 +1,7 @@
 package dymond;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Environment {
@@ -41,5 +42,70 @@ public class Environment {
 		}
 		
 		throw new RuntimeError(name, "Undefined variable '" + name.lexeme + "'.");
+	}
+	
+	
+	public void defineNativeFunctions() {
+		this.define("clock", new DymondCallable() {
+			@Override
+			public int arity() { return 0; }
+			
+			@Override
+			public Object call(Interpreter interpreter, List<Object> arguments) {
+				return (double)System.currentTimeMillis() / 1000.0;
+			}
+			
+			@Override
+			public String toString() { return "<native fn>"; }
+		});
+		
+		this.define("print", new DymondCallable() {
+			@Override 
+			public int arity() { return 2; }
+			
+			@Override 
+			public Object call(Interpreter interpreter, List<Object> arguments) {
+				Object text = arguments.get(0);
+				Object ending = arguments.get(1);
+
+				System.out.print((String)text + (String)ending);
+				
+				return null;
+			}
+			
+			@Override
+			public String toString() { return "<native fn>"; }
+		});
+		
+		this.define("print", new DymondCallable() {
+			@Override 
+			public int arity() { return 1; }
+			
+			@Override 
+			public Object call(Interpreter interpreter, List<Object> arguments) {
+				Object text = arguments.get(0);
+
+				System.out.println((String)text);
+				
+				return null;
+			}
+			
+			@Override
+			public String toString() { return "<native fn>"; }
+		});
+		
+		this.define("toString", new DymondCallable() {
+			@Override
+			public int arity() { return 1; }
+			
+			@Override 
+			public Object call(Interpreter interpreter, List<Object> arguments) {
+				Object obj = arguments.get(0);
+				return obj.toString();
+			}
+			
+			@Override
+			public String toString() { return "<native fn>"; }
+		});
 	}
 }

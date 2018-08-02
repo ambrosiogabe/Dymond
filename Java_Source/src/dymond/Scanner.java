@@ -21,13 +21,14 @@ public class Scanner {
 	    keywords.put("if",     IF);
 	    keywords.put("Null",    NULL);
 	    keywords.put("or",     OR);
-	    keywords.put("print",  PRINT);
 	    keywords.put("return", RETURN);
 	    keywords.put("super",  SUPER);
 	    keywords.put("this",   THIS);
 	    keywords.put("True",   TRUE);
 	    keywords.put("while",  WHILE);
 	    keywords.put("var", VAR);
+	    keywords.put("break", BREAK);
+	    keywords.put("next", NEXT);
 	  }
 	  
 	private final String source;

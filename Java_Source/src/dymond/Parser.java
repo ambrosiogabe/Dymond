@@ -2,6 +2,7 @@ package dymond;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Arrays;
 
 import static dymond.TokenType.*;
 
@@ -58,15 +59,120 @@ public class Parser {
 	}
 	
 	// statement -> exprStmt
+	//            | forStmt
 	//            | ifStmt
-	//            | printStmt
+	//            | whileStmt
+	//            | funcStmt
 	//            | block
+	//            | returnStmt
 	private Stmt statement() {
-		if (match(PRINT)) return printStatement();
 		if (match(LEFT_BRACE)) return new Stmt.Block(block());
 		if (match(IF)) return ifStatement();
-
+		if (match(WHILE)) return whileStatement();
+		if (match(FOR)) return forStatement();
+		if (match(FUNC)) return function("function");
+		if (match(RETURN)) return returnStatement();
+		if (match(BREAK)) return breakStatement();
+		if (match(NEXT)) return nextStatement();
+		
 		return expressionStatement();
+	}
+	
+	private Stmt returnStatement() {
+		Token keyword = previous();
+		Expr value = null;
+		if (!check(SEMICOLON)) {
+			value = expression();
+		}
+		
+		consume(SEMICOLON, "Expect ';' after return value.");
+		return new Stmt.Return(keyword, value);
+	}
+	
+	private Stmt breakStatement() {
+		Token keyword = previous();
+		consume(SEMICOLON, "Expect ';' after break.");
+		return new Stmt.Break(keyword);
+	}
+	
+	private Stmt nextStatement() {
+		Token keyword = previous();
+		consume(SEMICOLON, "Expect ';' after next.");
+		return new Stmt.Next(keyword);
+	}
+	
+	private Stmt.Function function(String kind) {
+		Token name = consume(IDENTIFIER, "Expect " + kind + " name.");
+		consume(LEFT_PAREN, "Expect '(' after " + kind + " name.");
+		List<Token> parameters = new ArrayList<>();
+		if (!check(RIGHT_PAREN)) {
+			do {
+				if (parameters.size() >= 32) {
+					error(peek(), "Cannot have more than 32 parameters.");
+				}
+				
+				parameters.add(consume(IDENTIFIER, "Expect a paramter name."));
+			} while (match(COMMA));
+		}
+		consume(RIGHT_PAREN, "Expect ')' after parameters.");
+		
+		consume(LEFT_BRACE, "Expect '{' before " + kind + " body.");
+		List<Stmt> body = block();
+		return new Stmt.Function(name,  parameters, body);
+	}
+	
+	private Stmt forStatement() {
+		consume(LEFT_PAREN, "Expect '(' after 'for'.");
+		
+		Stmt initializer;
+		if (match(SEMICOLON)) {
+			initializer = null;
+		} else if (match(VAR)) {
+			initializer = varDeclaration();
+		} else {
+			initializer = expressionStatement();
+		}
+		
+		Expr condition = null;
+		if (!check(SEMICOLON)) {
+			condition = expression();
+		}
+		consume(SEMICOLON, "Expect ';' after loop condition.");
+		
+		Expr increment = null;
+		if (!check(RIGHT_PAREN)) {
+			increment = expression();
+		}
+		consume(RIGHT_PAREN, "Expect ')' after for clauses.");
+		
+		Stmt body = statement();
+		
+		if (increment != null) {
+			body = new Stmt.Block(Arrays.asList(
+					body,
+					new Stmt.Expression(increment)
+				));		
+		}
+		
+		if (condition == null) condition = new Expr.Literal(true);
+		body = new Stmt.For(condition, body, new Stmt.Expression(increment));
+		
+		if (initializer != null) {
+			body = new Stmt.Block(Arrays.asList(initializer, body));
+		}
+		
+		return body;
+	}
+	
+	private Stmt whileStatement() {
+		consume(LEFT_PAREN, "Expect '(' after 'while'.");
+		Expr condition = expression();
+		consume(RIGHT_PAREN, "Expect ')' after condition.");
+		
+		Stmt body = null;
+		body = statement();
+		
+		return new Stmt.While(condition, body);
 	}
 	
 	private Stmt ifStatement() {
@@ -92,16 +198,6 @@ public class Parser {
 		
 		consume(RIGHT_BRACE, "Expect '}' after block.");
 		return statements;
-	}
-	
-	private Stmt printStatement() {
-		Expr value = expression();
-		
-		if(!repl)
-			consume(SEMICOLON, "Expect ';' after value.");
-		else 
-			match(SEMICOLON);
-		return new Stmt.Print(value);
 	}
 	
 	private Stmt expressionStatement() {
@@ -245,7 +341,8 @@ public class Parser {
 		if (match(BANG, MINUS, PLUS_PLUS, MINUS_MINUS)) {
 			Token operator = previous();
 			Expr right = postfix();
-			return new Expr.Unary(operator, right);
+			Token name = ((Expr.Variable)right).name;
+			return new Expr.UnaryAssign(name, operator);
 		}
 		
 		return postfix();
@@ -253,11 +350,27 @@ public class Parser {
 	
 	// postfix ++ --
 	private Expr postfix() {
-		Expr expr = primary();
+		Expr expr = call();
 		
 		if (match(PLUS_PLUS, MINUS_MINUS)) {
+			Token name = ((Expr.Variable)expr).name;
 			Token operator = previous();
-			return new Expr.Unary(operator, expr);
+			return new Expr.UnaryAssign(name, operator);
+		}
+		
+		return expr;
+	}
+	
+	// call -> primary ( "(" arguments? )" )* ;
+	private Expr call() {
+		Expr expr = primary();
+		
+		while (true) {
+			if (match(LEFT_PAREN)) {
+				expr = finishCall(expr);
+			} else {
+				break;
+			}
 		}
 		
 		return expr;
@@ -284,6 +397,21 @@ public class Parser {
 	
 	
 	
+	private Expr finishCall(Expr callee) {
+		List<Expr> arguments = new ArrayList<>();
+		if (!check(RIGHT_PAREN)) {
+			do {
+				if (arguments.size() >= 32) {
+					error(peek(), "Cannot have more than 32 arguments.");
+				}
+				arguments.add(assignment());
+			} while (match(COMMA));
+		}
+		
+		Token paren = consume(RIGHT_PAREN, "Expect ')' after arguments.");
+		
+		return new Expr.Call(callee, paren, arguments);
+	}
 	
 	
 	private Token consume(TokenType type, String message) {
@@ -308,7 +436,6 @@ public class Parser {
 				case FOR:
 				case IF:
 				case WHILE:
-				case PRINT:
 				case RETURN:
 					return;
 			}
