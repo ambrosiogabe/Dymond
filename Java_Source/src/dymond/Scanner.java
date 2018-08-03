@@ -29,6 +29,7 @@ public class Scanner {
 	    keywords.put("var", VAR);
 	    keywords.put("break", BREAK);
 	    keywords.put("next", NEXT);
+	    keywords.put("static", STATIC);
 	  }
 	  
 	private final String source;
