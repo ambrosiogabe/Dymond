@@ -425,7 +425,7 @@ public class Parser {
 	
 	// call -> primary ( "(" arguments? )" )* ;
 	private Expr call() {
-		Expr expr = primary();
+		Expr expr = subscript();
 		
 		while (true) {
 			if (match(LEFT_PAREN)) {
@@ -436,6 +436,18 @@ public class Parser {
 			} else {
 				break;
 			}
+		}
+		
+		return expr;
+	}
+	
+	private Expr subscript() {
+		Expr expr = primary();
+		
+		if (match(LEFT_BRACKET)) {
+			Expr sub = primary();
+			expr = new Expr.Subscript(expr, sub, previous());
+			consume(RIGHT_BRACKET, "Expect ']' after subscript.");
 		}
 		
 		return expr;

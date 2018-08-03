@@ -69,6 +69,8 @@ public class Scanner {
 			case ',': addToken(COMMA); break;
 			case '?': addToken(QUESTION); break;
 			case ':': addToken(COLON); break;
+			case '[': addToken(LEFT_BRACKET); break;
+			case ']': addToken(RIGHT_BRACKET); break;
 			case '.': 
 				if(isDigit(peek())) {
 					number();

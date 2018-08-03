@@ -37,6 +37,24 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 		}
 	}
 	
+	@Override 
+	public Object visitSubscriptExpr(Expr.Subscript expr) {
+		Object left = evaluate(expr.left);
+		Object right = evaluate(expr.subNum);
+		
+		if(left instanceof String && right instanceof Double) {
+			int num = ((Double)right).intValue();
+			String str = (String)left;
+			if (num > str.length()) {
+				throw new RuntimeError(expr.operator, "Subscript out of bounds.");
+			}
+			
+			return String.valueOf(str.charAt(num));
+		} else {
+			throw new RuntimeError(expr.operator, "Subscripting is only allowed for Strings.");
+		}
+	}
+	
 	@Override
 	public Object visitSuperExpr(Expr.Super expr) {
 		int distance = locals.get(expr);

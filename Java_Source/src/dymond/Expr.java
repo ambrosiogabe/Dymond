@@ -10,6 +10,7 @@ public abstract class Expr{
 		R visitGroupingExpr(Grouping expr);
 		R visitLiteralExpr(Literal expr);
 		R visitLogicalExpr(Logical expr);
+		R visitSubscriptExpr(Subscript expr);
 		R visitSetExpr(Set expr);
 		R visitSuperExpr(Super expr);
 		R visitTernaryExpr(Ternary expr);
@@ -128,6 +129,23 @@ public abstract class Expr{
 		public final Expr left;
 		public final Token operator;
 		public final Expr right;
+	}
+
+	public static class Subscript extends Expr{
+		public Subscript(Expr left, Expr subNum, Token operator) {
+			this.left = left;
+			this.subNum = subNum;
+			this.operator = operator;
+		}
+
+		public <R> R accept(Visitor<R> visitor) {
+			return visitor.visitSubscriptExpr(this);
+		}
+
+
+		public final Expr left;
+		public final Expr subNum;
+		public final Token operator;
 	}
 
 	public static class Set extends Expr{

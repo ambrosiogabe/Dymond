@@ -318,6 +318,33 @@ public class Environment {
 			@Override
 			public String toString() { return "<native fn>"; }
 		});
+		
+		this.define("len", new DymondCallable() {
+			@Override
+			public int minArity() { return 1; }
+			@Override
+			public int maxArity() { return 1; }
+			
+			@Override 
+			public Object call1(Interpreter interpreter, List<Object> arguments, Expr.Call expr) {
+				Object obj = arguments.get(0);
+				
+				if (obj instanceof String) {
+					double len = ((String)obj).length();
+					return len;
+				}
+				
+				return 0;
+			}
+			
+			@Override
+			public Object call(Interpreter interpreter, List<Expr> arguments, Expr.Call expr) {
+				return null;
+			}
+			
+			@Override
+			public String toString() { return "<native fn>"; }
+		});
 	}
 	
 	private String stringify(Object object) {

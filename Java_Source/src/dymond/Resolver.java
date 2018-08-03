@@ -242,6 +242,13 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 	}
 	
 	@Override
+	public Void visitSubscriptExpr(Expr.Subscript expr) {
+		resolve(expr.left);
+		resolve(expr.subNum);
+		return null;
+	}
+	
+	@Override
 	public Void visitBreakStmt(Break stmt) {
 		return null;
 	}
