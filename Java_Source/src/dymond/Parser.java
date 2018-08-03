@@ -89,6 +89,12 @@ public class Parser {
 		while (!check(RIGHT_BRACE) && !isAtEnd()) {
 			if (match(STATIC)) staticMethods.add(function("staticMethod"));
 			else if (match(FUNC)) methods.add(function("method"));
+			else {
+				Dymond.error(peek().line, "Unexpected token.", peek().lineText, peek().column);
+				while (!check(STATIC) && !check(FUNC) && !check(RIGHT_BRACE) && !isAtEnd()) {
+					consume(peek().type, "");
+				}
+			}
 		}
 		
 		consume(RIGHT_BRACE, "Expect '}' after class body.");

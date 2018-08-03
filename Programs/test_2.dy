@@ -1,1 +1,18 @@
+class Circle {
+  func init(radius) {
+    this.radius = radius;
+  }
 
+  func area() {
+    return 3.14 * this.radius * this.radius;
+  }
+
+  static square(n) {
+    return n * n;
+  }
+}
+
+var circle = Circle(4);
+print(circle.area());
+
+print(Circle.square(2));

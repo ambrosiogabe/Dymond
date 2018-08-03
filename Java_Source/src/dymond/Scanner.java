@@ -113,7 +113,7 @@ public class Scanner {
 					addToken(DIV_EQUAL);
 					break;
 				} else if (match('*')) {
-					while(peek() != '*' && peekNext() != '/') {
+					while(!isAtEnd() && peek() != '*' && peekNext() != '/') {
 						if(source.charAt(current) == '\n') {
 							line++;
 							currentLine = "";
@@ -121,8 +121,10 @@ public class Scanner {
 						}
 						advance();
 					}
-					advance();
-					advance();
+					if(!isAtEnd())
+						advance();
+					if(!isAtEnd())
+						advance();
 					break;
 				}
 				addToken(match('/') ? INTEGER_DIV : DIV); break;
