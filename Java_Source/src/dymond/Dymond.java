@@ -22,7 +22,6 @@ public class Dymond {
 			System.out.println("Usage: dymond [script]");
 			System.exit(64);
 		} else if (args.length == 1) {
-			//runPrompt(); // Uncomment to run prompt
 			runFile(args[0]);
 		} else {
 			runPrompt();

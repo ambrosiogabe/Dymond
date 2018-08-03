@@ -12,7 +12,10 @@ class Circle {
   }
 }
 
-var circle = Circle(4);
-print(circle.area());
 
-print(Circle.square(2));
+func hello(name) {
+  print("Hello, " + name);
+}
+
+var circle = Circle(2);
+circle.hello = hello("bob");
