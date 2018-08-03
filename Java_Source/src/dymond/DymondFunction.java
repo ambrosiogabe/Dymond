@@ -52,15 +52,15 @@ public class DymondFunction implements DymondCallable {
 			String name = declaration.parameters.get(i).name.lexeme;
 			
 			if (!environment.check(name)) {
-				if (declaration.parameters.get(i).operator != null) {
-					environment.define(name, interpreter.evaluate(declaration.parameters.get(i).value));
+				if(q.size() > 0) {
+					Object value = q.removeFirst();
+					environment.define(name, value);
 					continue;
 				} else {
-					if(q.size() > 0) {
-						Object value = q.removeFirst();
-						environment.define(name, value);
+					if (declaration.parameters.get(i).operator != null) {
+						environment.define(name, interpreter.evaluate(declaration.parameters.get(i).value));
 					} else {
-						Dymond.runtimeError(new RuntimeError(expr.paren, "You do not have the required arguments."));
+						Dymond.runtimeError(new RuntimeError(expr.paren, "Missing required arguments."));
 					}
 				}
 			}

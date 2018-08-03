@@ -1,9 +1,5 @@
-
-
-func sum(a, b=1, c=0) {
-  print("a = " + a);
-  print("b = " + b);
-  print("c = " + c);
+func myPrint(text, sep=" ", end="the end") {
+  print(text + sep + end);
 }
 
-sum(b=4, a=0, c=3);
+myPrint("Hi", " aaah ");
