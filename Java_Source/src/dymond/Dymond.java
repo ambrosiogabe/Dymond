@@ -1,6 +1,7 @@
 package dymond;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
@@ -8,7 +9,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
 import dymond.Parser;
 
 public class Dymond {
@@ -22,6 +22,8 @@ public class Dymond {
 			System.out.println("Usage: dymond [script]");
 			System.exit(64);
 		} else if (args.length == 1) {
+			//String wd = System.getProperty("user.dir");
+			//String file = wd + File.separatorChar + args[0]; 
 			runFile(args[0]);
 		} else {
 			runPrompt();
