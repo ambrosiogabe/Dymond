@@ -272,9 +272,9 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 		currentFunction = type;
 		
 		beginScope();
-		for (Token param : function.parameters) {
-			declare(param);
-			define(param);
+		for (Expr.Assign param : function.parameters) {
+			declare(param.name);
+			define(param.name);
 		}
 		resolve(function.body);
 		endScope();

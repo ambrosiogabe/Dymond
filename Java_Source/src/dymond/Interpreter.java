@@ -128,6 +128,16 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 	public Void visitFunctionStmt(Stmt.Function stmt) {
 		DymondFunction function = new DymondFunction(stmt, environment, false);
 		environment.define(stmt.name.lexeme,  function);
+		
+		for (Expr.Assign expr : stmt.parameters) {
+			if (expr.operator != null) {
+				Object value = evaluate(expr.value);
+				environment.define(expr.name.lexeme, value);
+			} else {
+				environment.define(expr.name.lexeme, null);
+			}
+		}
+		
 		return null;
 	}
 	
@@ -135,24 +145,26 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 	public Object visitCallExpr(Expr.Call expr) {
 		Object callee = evaluate(expr.callee);
 		
-		List<Object> arguments = new ArrayList<>();
-		for (Expr argument : expr.arguments) {
-			arguments.add(evaluate(argument));
-		}
-		
 		if (!(callee instanceof DymondCallable)) {
 			throw new RuntimeError(expr.paren, "Can only call functions and classes.");			
 		}
 		
 		DymondCallable function = (DymondCallable)callee;
-		if (arguments.size() != function.arity()) {
-			throw new RuntimeError(expr.paren, "Expected " + function.arity() + " arguments, but got " + arguments.size() + ".");
+		if (expr.arguments.size() < function.minArity() || expr.arguments.size() > function.maxArity()) {
+			if(function.minArity() != function.maxArity())
+				throw new RuntimeError(expr.paren, "Expected between " + function.minArity() + " and " + function.maxArity() + " arguments, but got " + expr.arguments.size() + " argument(s).");
+			throw new RuntimeError(expr.paren, "Expected " + function.minArity() + " argument(s), but got " + expr.arguments.size() + " argument(s).");
 		}
 		
-		if(callee.toString().equals("<native fn>"))
-			return function.call(this, arguments, expr);
+		if(callee.toString().equals("<native fn>")) {
+			List<Object> newArgs = new ArrayList<>();
+			for (Expr argument : expr.arguments) {
+				newArgs.add(evaluate(argument));
+			}
+			return function.call1(this, newArgs, expr);
+		}
 		else
-			return function.call(this,  arguments);
+			return function.call(this, expr.arguments, expr);
 	}
 	
 	@Override 

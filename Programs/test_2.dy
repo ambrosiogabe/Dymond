@@ -1,14 +1,9 @@
-class Doughnut {
-  func cook() {
-    print("Fry until golden brown.");
-  }
+
+
+func sum(a, b=1, c=0) {
+  print("a = " + a);
+  print("b = " + b);
+  print("c = " + c);
 }
 
-class BostonCream <- Doughnut {
-  func cook() {
-    super.cook();
-    print("Stuff it with cream.");
-  }
-}
-
-BostonCream().cook();
+sum(b=4, a=0, c=3);

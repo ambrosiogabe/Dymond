@@ -49,6 +49,13 @@ public class Environment {
 		throw new RuntimeError(name, "Undefined variable '" + name.lexeme + "'.");
 	}
 	
+	public boolean check(String name) {
+		if (values.containsKey(name)) {
+			return true;
+		}
+		return false;
+	}
+	
 	public void assign(Token name, Object value) {
 		if (values.containsKey(name.lexeme)) {
 			values.put(name.lexeme, value);
@@ -67,15 +74,17 @@ public class Environment {
 	public void defineNativeFunctions() {
 		this.define("clock", new DymondCallable() {
 			@Override
-			public int arity() { return 0; }
+			public int minArity() { return 0; }
+			@Override
+			public int maxArity() { return 0; }
 			
 			@Override
-			public Object call(Interpreter interpreter, List<Object> arguments, Expr.Call expr) {
+			public Object call1(Interpreter interpreter, List<Object> arguments, Expr.Call expr) {
 				return (double)System.currentTimeMillis() / 1000.0;
 			}
 			
 			@Override
-			public Object call(Interpreter interpreter, List<Object> arguments) {
+			public Object call(Interpreter interpreter, List<Expr> arguments, Expr.Call expr) {
 				return null;
 			}
 			
@@ -85,10 +94,12 @@ public class Environment {
 		
 		this.define("print", new DymondCallable() {
 			@Override 
-			public int arity() { return 1; }
+			public int minArity() { return 1; }
+			@Override
+			public int maxArity() { return 1; }
 			
 			@Override 
-			public Object call(Interpreter interpreter, List<Object> arguments, Expr.Call expr) {
+			public Object call1(Interpreter interpreter, List<Object> arguments, Expr.Call expr) {
 				Object text = arguments.get(0);
 
 				System.out.println(stringify(text));
@@ -97,7 +108,7 @@ public class Environment {
 			}
 			
 			@Override
-			public Object call(Interpreter interpreter, List<Object> arguments) {
+			public Object call(Interpreter interpreter, List<Expr> arguments, Expr.Call expr) {
 				return null;
 			}
 			
@@ -107,10 +118,12 @@ public class Environment {
 		
 		this.define("toString", new DymondCallable() {
 			@Override
-			public int arity() { return 1; }
+			public int minArity() { return 1; }
+			@Override
+			public int maxArity() { return 1; }
 			
 			@Override 
-			public Object call(Interpreter interpreter, List<Object> arguments, Expr.Call expr) {
+			public Object call1(Interpreter interpreter, List<Object> arguments, Expr.Call expr) {
 				Object obj = arguments.get(0);
 				
 				if(!(obj instanceof Double)) {
@@ -122,7 +135,7 @@ public class Environment {
 			}
 			
 			@Override
-			public Object call(Interpreter interpreter, List<Object> arguments) {
+			public Object call(Interpreter interpreter, List<Expr> arguments, Expr.Call expr) {
 				return null;
 			}
 			
@@ -132,10 +145,12 @@ public class Environment {
 		
 		this.define("input", new DymondCallable() {
 			@Override
-			public int arity() { return 1; }
+			public int minArity() { return 1; }
+			@Override
+			public int maxArity() { return 1; }
 			
 			@Override
-			public Object call(Interpreter interpreter, List<Object> arguments, Expr.Call expr) {
+			public Object call1(Interpreter interpreter, List<Object> arguments, Expr.Call expr) {
 				Object text = arguments.get(0);
 				
 				if(!(text instanceof String)) {
@@ -150,7 +165,7 @@ public class Environment {
 			}
 			
 			@Override
-			public Object call(Interpreter interpreter, List<Object> arguments) {
+			public Object call(Interpreter interpreter, List<Expr> arguments, Expr.Call expr) {
 				return null;
 			}
 			
@@ -160,10 +175,12 @@ public class Environment {
 		
 		this.define("toNumber", new DymondCallable() {
 			@Override
-			public int arity() { return 1; }
+			public int minArity() { return 1; }
+			@Override
+			public int maxArity() { return 1; }
 			
 			@Override
-			public Object call(Interpreter interpreter, List<Object> arguments, Expr.Call expr) {
+			public Object call1(Interpreter interpreter, List<Object> arguments, Expr.Call expr) {
 				Object text = arguments.get(0);
 				
 				if (!(text instanceof String)) {
@@ -180,7 +197,7 @@ public class Environment {
 			}
 			
 			@Override
-			public Object call(Interpreter interpreter, List<Object> arguments) {
+			public Object call(Interpreter interpreter, List<Expr> arguments, Expr.Call expr) {
 				return null;
 			}
 			
@@ -190,10 +207,12 @@ public class Environment {
 		
 		this.define("isNumber", new DymondCallable() {
 			@Override
-			public int arity() { return 1; }
+			public int minArity() { return 1; }
+			@Override
+			public int maxArity() { return 1; }
 			
 			@Override 
-			public Object call(Interpreter interpreter, List<Object> arguments, Expr.Call expr) {
+			public Object call1(Interpreter interpreter, List<Object> arguments, Expr.Call expr) {
 				Object text = arguments.get(0);
 				
 				if (!(text instanceof String)) {
@@ -204,7 +223,7 @@ public class Environment {
 			}
 			
 			@Override
-			public Object call(Interpreter interpreter, List<Object> arguments) {
+			public Object call(Interpreter interpreter, List<Expr> arguments, Expr.Call expr) {
 				return null;
 			}
 			
@@ -214,10 +233,12 @@ public class Environment {
 		
 		this.define("sqrt", new DymondCallable() {
 			@Override
-			public int arity() { return 1; }
+			public int minArity() { return 1; }
+			@Override
+			public int maxArity() { return 1; }
 			
 			@Override 
-			public Object call(Interpreter interpreter, List<Object> arguments, Expr.Call expr) {
+			public Object call1(Interpreter interpreter, List<Object> arguments, Expr.Call expr) {
 				Object text = arguments.get(0);
 				
 				if (!(text instanceof Double)) {
@@ -229,7 +250,7 @@ public class Environment {
 			}
 			
 			@Override
-			public Object call(Interpreter interpreter, List<Object> arguments) {
+			public Object call(Interpreter interpreter, List<Expr> arguments, Expr.Call expr) {
 				return null;
 			}
 			
@@ -239,10 +260,12 @@ public class Environment {
 		
 		this.define("randomInt", new DymondCallable() {
 			@Override
-			public int arity() { return 2; }
+			public int minArity() { return 2; }
+			@Override
+			public int maxArity() { return 2; }
 			
 			@Override 
-			public Object call(Interpreter interpreter, List<Object> arguments, Expr.Call expr) {
+			public Object call1(Interpreter interpreter, List<Object> arguments, Expr.Call expr) {
 				Object numOne = arguments.get(0);
 				Object numTwo = arguments.get(1);
 				
@@ -267,7 +290,7 @@ public class Environment {
 			}
 			
 			@Override
-			public Object call(Interpreter interpreter, List<Object> arguments) {
+			public Object call(Interpreter interpreter, List<Expr> arguments, Expr.Call expr) {
 				return null;
 			}
 			
@@ -277,16 +300,18 @@ public class Environment {
 		
 		this.define("typeof", new DymondCallable() {
 			@Override
-			public int arity() { return 1; }
+			public int minArity() { return 1; }
+			@Override
+			public int maxArity() { return 1; }
 			
 			@Override 
-			public Object call(Interpreter interpreter, List<Object> arguments, Expr.Call expr) {
+			public Object call1(Interpreter interpreter, List<Object> arguments, Expr.Call expr) {
 				Object obj = arguments.get(0);
 				return obj.getClass();
 			}
 			
 			@Override
-			public Object call(Interpreter interpreter, List<Object> arguments) {
+			public Object call(Interpreter interpreter, List<Expr> arguments, Expr.Call expr) {
 				return null;
 			}
 			

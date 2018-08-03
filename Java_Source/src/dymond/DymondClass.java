@@ -56,25 +56,32 @@ public class DymondClass extends DymondInstance implements DymondCallable {
 	}
 	
 	@Override 
-	public Object call(Interpreter interpreter, List<Object> arguments) {
+	public Object call(Interpreter interpreter, List<Expr> arguments, Expr.Call expr) {
 		DymondInstance instance = new DymondInstance(this);
 		DymondFunction initializer = methods.get("init");
 		if (initializer != null) {
-			initializer.bind(instance).call(interpreter, arguments);
+			initializer.bind(instance).call(interpreter, arguments, expr);
 		}
 		
 		return instance;
 	}
 	
 	@Override 
-	public int arity() {
+	public int minArity() {
 		DymondFunction initializer = methods.get("init");
 		if (initializer == null) return 0;
-		return initializer.arity();
+		return initializer.minArity();
+	}
+	
+	@Override
+	public int maxArity() {
+		DymondFunction initializer = methods.get("init");
+		if (initializer == null) return 0;
+		return initializer.maxArity();
 	}
 	
 	@Override 
-	public Object call(Interpreter interpreter, List<Object> arguments, Expr.Call expr) {
+	public Object call1(Interpreter interpreter, List<Object> arguments, Expr.Call expr) {
 		return null;
 	}
 }

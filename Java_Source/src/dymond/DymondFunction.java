@@ -1,16 +1,28 @@
 package dymond;
 
 import java.util.List;
+import java.util.ArrayDeque;
 
 public class DymondFunction implements DymondCallable {
 	private final Stmt.Function declaration;
 	private final Environment closure;
 	private final boolean isInitializer;
+	private final int minParamArgs;
+	private final int maxParamArgs;
 	
 	public DymondFunction(Stmt.Function declaration, Environment closure, boolean isInitializer) {
 		this.declaration = declaration;
 		this.closure = closure;
 		this.isInitializer = isInitializer;
+		
+		int min = 0;
+		for (Expr.Assign expr : declaration.parameters) {
+			if (expr.operator == null) {
+				min++;
+			}
+		}
+		this.minParamArgs = min;
+		this.maxParamArgs = declaration.parameters.size();
 	}
 	
 	public DymondFunction bind(DymondInstance instance) {
@@ -20,10 +32,38 @@ public class DymondFunction implements DymondCallable {
 	}
 	
 	@Override 
-	public Object call(Interpreter interpreter, List<Object> arguments) {
+	public Object call(Interpreter interpreter, List<Expr> arguments, Expr.Call expr) {
 		Environment environment = new Environment(closure);
+		ArrayDeque<Object> q = new ArrayDeque<>();
+		
+		for (int i = 0; i < arguments.size(); i++) {
+			if (arguments.get(i) instanceof Expr.Assign) {
+				Expr.Assign arg = (Expr.Assign)arguments.get(i);
+				String name = arg.name.lexeme;
+				Object val = interpreter.evaluate(arg);
+				environment.define(name, val);
+			} else {
+				q.add(interpreter.evaluate(arguments.get(i)));
+			}
+		}
+		
+		
 		for (int i = 0; i < declaration.parameters.size(); i++) {
-			environment.define(declaration.parameters.get(i).lexeme, arguments.get(i));
+			String name = declaration.parameters.get(i).name.lexeme;
+			
+			if (!environment.check(name)) {
+				if (declaration.parameters.get(i).operator != null) {
+					environment.define(name, interpreter.evaluate(declaration.parameters.get(i).value));
+					continue;
+				} else {
+					if(q.size() > 0) {
+						Object value = q.removeFirst();
+						environment.define(name, value);
+					} else {
+						Dymond.runtimeError(new RuntimeError(expr.paren, "You do not have the required arguments."));
+					}
+				}
+			}
 		}
 		
 		try {
@@ -37,13 +77,18 @@ public class DymondFunction implements DymondCallable {
 	}
 	
 	@Override 
-	public Object call(Interpreter interpreter, List<Object> arguments, Expr.Call expr) {
+	public Object call1(Interpreter interpreter, List<Object> arguments, Expr.Call expr) {
 		return null;
 	}
 	
 	@Override
-	public int arity() {
-		return declaration.parameters.size();
+	public int minArity() {
+		return minParamArgs;
+	}
+	
+	@Override
+	public int maxArity() {
+		return maxParamArgs;
 	}
 	
 	@Override 

@@ -139,14 +139,23 @@ public class Parser {
 			name = consume(IDENTIFIER, "Expect " + kind + " name.");
 		
 		consume(LEFT_PAREN, "Expect '(' after " + kind + " name.");
-		List<Token> parameters = new ArrayList<>();
+		List<Expr.Assign> parameters = new ArrayList<>();
 		if (!check(RIGHT_PAREN)) {
 			do {
 				if (parameters.size() >= 32) {
 					error(peek(), "Cannot have more than 32 parameters.");
 				}
+				Token paramName = consume(IDENTIFIER, "Expect a parameter name.");
+				Token operator = null;
+				Expr value = null;
 				
-				parameters.add(consume(IDENTIFIER, "Expect a paramter name."));
+				if (match(EQUAL)) {
+					operator = previous();
+					value = primary();
+				} 
+				
+				Expr.Assign param = new Expr.Assign(paramName, value, operator);
+				parameters.add(param);
 			} while (match(COMMA));
 		}
 		consume(RIGHT_PAREN, "Expect ')' after parameters.");
