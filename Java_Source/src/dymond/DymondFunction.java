@@ -5,10 +5,18 @@ import java.util.List;
 public class DymondFunction implements DymondCallable {
 	private final Stmt.Function declaration;
 	private final Environment closure;
+	private final boolean isInitializer;
 	
-	public DymondFunction(Stmt.Function declaration, Environment closure) {
+	public DymondFunction(Stmt.Function declaration, Environment closure, boolean isInitializer) {
 		this.declaration = declaration;
 		this.closure = closure;
+		this.isInitializer = isInitializer;
+	}
+	
+	public DymondFunction bind(DymondInstance instance) {
+		Environment environment = new Environment(closure);
+		environment.define("this", instance);
+		return new DymondFunction(declaration, environment, isInitializer);
 	}
 	
 	@Override 
@@ -23,6 +31,8 @@ public class DymondFunction implements DymondCallable {
 		} catch (Return returnValue) {
 			return returnValue.value;
 		}
+		
+		if (isInitializer) return closure.getAt(0, "this");
 		return null;
 	}
 	

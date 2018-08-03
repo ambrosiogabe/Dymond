@@ -14,15 +14,77 @@ import dymond.Stmt.Next;
 public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 	private enum FunctionType {
 		NONE,
-		FUNCTION
+		FUNCTION,
+		INITIALIZER,
+		METHOD
+	}
+	
+	private enum ClassType {
+		NONE,
+		CLASS
 	}
 	
 	private final Interpreter interpreter;
 	private final Stack<Map<String, Boolean>> scopes = new Stack<>();
 	private FunctionType currentFunction = FunctionType.NONE;
+	private ClassType currentClass = ClassType.NONE;
 	
 	public Resolver(Interpreter interpreter) {
 		this.interpreter = interpreter;
+	}
+	
+	@Override
+	public Void visitThisExpr(Expr.This expr) {
+		if (currentClass == ClassType.NONE) {
+			Dymond.error(expr.keyword.line, "Cannot use 'this' outside of a class.", expr.keyword.lineText, expr.keyword.column);
+			return null;
+		}
+		
+		resolveLocal(expr, expr.keyword);
+		return null;
+	}
+	
+	@Override 
+	public Void visitSetExpr(Expr.Set expr) {
+		resolve(expr.value);
+		resolve(expr.object);
+		return null;
+	}
+	
+	@Override 
+	public Void visitGetExpr(Expr.Get expr) {
+		resolve(expr.object);
+		return null;
+	}
+	
+	@Override
+	public Void visitClassStmt(Stmt.Class stmt) {
+		ClassType enclosingClass = currentClass;
+		currentClass = ClassType.CLASS;
+		
+		declare(stmt.name);
+		define(stmt.name);
+		
+		beginScope();
+		scopes.peek().put("this", true);
+		
+		for (Stmt.Function method : stmt.methods) {
+			FunctionType declaration = FunctionType.METHOD;
+			if (method.name.lexeme.equals("init")) {
+				declaration = FunctionType.INITIALIZER;
+			}
+			resolveFunction(method, declaration);
+		}
+		
+		for (Stmt.Function staticMethod : stmt.staticMethods) {
+			FunctionType declaration = FunctionType.METHOD;
+			resolveFunction(staticMethod, declaration);
+		}
+		
+		endScope();
+		
+		currentClass = enclosingClass;
+		return null;
 	}
 	
 	@Override
@@ -96,6 +158,9 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 		}
 		
 		if (stmt.value != null) {
+			if (currentFunction == FunctionType.INITIALIZER) {
+				Dymond.error(stmt.keyword.line, "Cannot return a value from an initializer.", stmt.keyword.lineText, stmt.keyword.column);
+			}
 			resolve(stmt.value);
 		}
 		

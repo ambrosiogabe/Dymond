@@ -6,10 +6,13 @@ public abstract class Expr{
 		R visitAssignExpr(Assign expr);
 		R visitBinaryExpr(Binary expr);
 		R visitCallExpr(Call expr);
-		R visitTernaryExpr(Ternary expr);
+		R visitGetExpr(Get expr);
 		R visitGroupingExpr(Grouping expr);
 		R visitLiteralExpr(Literal expr);
 		R visitLogicalExpr(Logical expr);
+		R visitSetExpr(Set expr);
+		R visitTernaryExpr(Ternary expr);
+		R visitThisExpr(This expr);
 		R visitUnaryExpr(Unary expr);
 		R visitUnaryAssignExpr(UnaryAssign expr);
 		R visitVariableExpr(Variable expr);
@@ -68,21 +71,19 @@ public abstract class Expr{
 		public final List<Expr> arguments;
 	}
 
-	public static class Ternary extends Expr{
-		public Ternary(Expr left, Expr right, Expr condition) {
-			this.left = left;
-			this.right = right;
-			this.condition = condition;
+	public static class Get extends Expr{
+		public Get(Expr object, Token name) {
+			this.object = object;
+			this.name = name;
 		}
 
 		public <R> R accept(Visitor<R> visitor) {
-			return visitor.visitTernaryExpr(this);
+			return visitor.visitGetExpr(this);
 		}
 
 
-		public final Expr left;
-		public final Expr right;
-		public final Expr condition;
+		public final Expr object;
+		public final Token name;
 	}
 
 	public static class Grouping extends Expr{
@@ -126,6 +127,55 @@ public abstract class Expr{
 		public final Expr left;
 		public final Token operator;
 		public final Expr right;
+	}
+
+	public static class Set extends Expr{
+		public Set(Expr object, Token name, Expr value, Token equals) {
+			this.object = object;
+			this.name = name;
+			this.value = value;
+			this.equals = equals;
+		}
+
+		public <R> R accept(Visitor<R> visitor) {
+			return visitor.visitSetExpr(this);
+		}
+
+
+		public final Expr object;
+		public final Token name;
+		public final Expr value;
+		public final Token equals;
+	}
+
+	public static class Ternary extends Expr{
+		public Ternary(Expr left, Expr right, Expr condition) {
+			this.left = left;
+			this.right = right;
+			this.condition = condition;
+		}
+
+		public <R> R accept(Visitor<R> visitor) {
+			return visitor.visitTernaryExpr(this);
+		}
+
+
+		public final Expr left;
+		public final Expr right;
+		public final Expr condition;
+	}
+
+	public static class This extends Expr{
+		public This(Token keyword) {
+			this.keyword = keyword;
+		}
+
+		public <R> R accept(Visitor<R> visitor) {
+			return visitor.visitThisExpr(this);
+		}
+
+
+		public final Token keyword;
 	}
 
 	public static class Unary extends Expr{

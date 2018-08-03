@@ -37,6 +37,42 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 		}
 	}
 	
+	@Override
+	public Object visitThisExpr(Expr.This expr) {
+		return lookUpVariable(expr.keyword, expr);
+	}
+	
+	@Override
+	public Object visitGetExpr(Expr.Get expr) {
+		Object object = evaluate(expr.object);
+		if (object instanceof DymondInstance) {
+			return ((DymondInstance) object).get(expr.name);
+		}
+		
+		throw new RuntimeError(expr.name, "Only instances have properties.");
+	}
+	
+	@Override
+	public Void visitClassStmt(Stmt.Class stmt) {
+		environment.define(stmt.name.lexeme, null);
+		
+		Map<String, DymondFunction> methods = new HashMap<>();
+		Map<String, DymondFunction> staticMethods = new HashMap<>();
+		for (Stmt.Function method : stmt.methods) {
+			DymondFunction function = new DymondFunction(method, environment, method.name.lexeme.equals("init"));
+			methods.put(method.name.lexeme, function);
+		}
+		
+		for (Stmt.Function staticMethod : stmt.staticMethods) {
+			DymondFunction function = new DymondFunction(staticMethod, environment, false);
+			staticMethods.put(staticMethod.name.lexeme, function);
+		}
+		
+		DymondClass klass = new DymondClass(stmt.name.lexeme, methods, staticMethods);
+		environment.assign(stmt.name,  klass);
+		return null;
+	}
+	
 	@Override 
 	public Void visitReturnStmt(Stmt.Return stmt) {
 		Object value = null;
@@ -57,7 +93,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 	
 	@Override
 	public Void visitFunctionStmt(Stmt.Function stmt) {
-		DymondFunction function = new DymondFunction(stmt, environment);
+		DymondFunction function = new DymondFunction(stmt, environment, false);
 		environment.define(stmt.name.lexeme,  function);
 		return null;
 	}
@@ -203,6 +239,54 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 		} else {
 			globals.assign(expr.name, finalValue);
 		}
+		return finalValue;
+	}
+	
+	@Override 
+	public Object visitSetExpr(Expr.Set expr) {
+		Object object = evaluate(expr.object);
+		
+		if (!(object instanceof DymondInstance)) {
+			throw new RuntimeError(expr.name, "Only instances have fields.");
+		}
+		
+		Object right = evaluate(expr.value);
+		Object left = ((DymondInstance)object).get(expr.name, true);
+		Object finalValue = null;
+		
+		if (left == null && expr.equals.type != EQUAL) {
+			throw new RuntimeError(expr.name, "Undefined property '" + expr.name.lexeme + "'.");
+		}
+		
+		switch(expr.equals.type) {
+			case PLUS_EQUAL:
+				if (left instanceof String && right instanceof String) finalValue = (String)left + (String)right;
+				else if (left instanceof Double && right instanceof Double) finalValue = (Double)left + (Double)right;
+				else if(left instanceof Double && right instanceof String || left instanceof String && right instanceof Double) {
+					if (left instanceof Double) left = stringify(left);
+					if (right instanceof Double) right = stringify(right);
+					finalValue = (String)left + (String)right;
+				} else throw new RuntimeError(expr.equals, "Operands may be comprised of numbers and strings only.");
+				break;
+			case MINUS_EQUAL:
+				if (left instanceof Double && right instanceof Double) finalValue = (Double)left - (Double)right;
+				else throw new RuntimeError(expr.equals, "Operands must be two numbers.");
+				break;
+			case MODULO_EQUAL:
+				if (left instanceof Double && right instanceof Double) finalValue = (Double)left % (Double)right;
+				else throw new RuntimeError(expr.equals, "Operands must be two numbers.");
+				break;
+			case TIMES_EQUAL:
+				if (left instanceof Double && right instanceof Double) finalValue = (Double)left * (Double)right;
+				else throw new RuntimeError(expr.equals, "Operands must be two numbers.");
+				break;
+		}
+		
+		if(finalValue == null && right != null) {
+			finalValue = right;
+		}
+		
+		((DymondInstance)object).set(expr.name, finalValue);
 		return finalValue;
 	}
 	

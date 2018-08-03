@@ -65,6 +65,7 @@ public class Parser {
 	//            | funcStmt
 	//            | block
 	//            | returnStmt
+	//            | classDecl
 	private Stmt statement() {
 		if (match(LEFT_BRACE)) return new Stmt.Block(block());
 		if (match(IF)) return ifStatement();
@@ -74,8 +75,25 @@ public class Parser {
 		if (match(RETURN)) return returnStatement();
 		if (match(BREAK)) return breakStatement();
 		if (match(NEXT)) return nextStatement();
+		if (match(CLASS)) return classDeclaration();
 		
 		return expressionStatement();
+	}
+	
+	private Stmt classDeclaration() {
+		Token name = consume(IDENTIFIER, "Expect a class name.");
+		consume(LEFT_BRACE, "Expect '{' before class body.");
+		
+		List<Stmt.Function> methods = new ArrayList<>();
+		List<Stmt.Function> staticMethods = new ArrayList<>(); 
+		while (!check(RIGHT_BRACE) && !isAtEnd()) {
+			if(match(CLASS)) staticMethods.add(function("staticMethod"));
+			else methods.add(function("method"));
+		}
+		
+		consume(RIGHT_BRACE, "Expect '}' after class body.");
+		
+		return new Stmt.Class(name,  methods, staticMethods);
 	}
 	
 	private Stmt returnStatement() {
@@ -241,6 +259,9 @@ public class Parser {
 			if (expr instanceof Expr.Variable) {
 				Token name = ((Expr.Variable)expr).name;
 				return new Expr.Assign(name,  value, equals);
+			} else if (expr instanceof Expr.Get) {
+				Expr.Get get = (Expr.Get)expr;
+				return new Expr.Set(get.object, get.name, value, equals);
 			}
 			
 			error(equals, "Invalid assignment target.");
@@ -387,6 +408,9 @@ public class Parser {
 		while (true) {
 			if (match(LEFT_PAREN)) {
 				expr = finishCall(expr);
+			} else if (match(DOT)) {
+				Token name = consume(IDENTIFIER, "Expect property name after '.'.");
+				expr = new Expr.Get(expr, name);
 			} else {
 				break;
 			}
@@ -402,6 +426,7 @@ public class Parser {
 		if (match(NULL)) return new Expr.Literal(null);
 		if (match(IDENTIFIER)) return new Expr.Variable(previous());
 		if (match(NUMBER, STRING)) return new Expr.Literal(previous().literal);
+		if (match(THIS)) return new Expr.This(previous());
 		
 		if (match(LEFT_PAREN)) {
 			Expr expr = expression();

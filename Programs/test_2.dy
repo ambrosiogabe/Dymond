@@ -1,25 +1,9 @@
-var num = randomInt(1, 100);
-var userIn = -1;
-var numTries = 0;
+class Math {
+  class square(n) {
+    return n * n;
+  }
 
-print("I'm thinking of a number between 1 and 100. Take a guess.");
-print("");
-while(userIn != num) {
-  userIn = input("Guess: ");
-
-  if(!isNumber(userIn)) {
-    print("Please enter a number.");
-  } else {
-    userIn = toNumber(userIn);
-    if(userIn < num) {
-      print("Higher.");
-    }
-    if(userIn > num) {
-      print("Lower.");
-    }
-    if(userIn == num) {
-      print("You got it in " + (numTries + 1) + " tries!");
-    }
-    numTries++;
+  other_square(n) {
+    return n * n;
   }
 }
