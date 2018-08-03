@@ -1,21 +1,14 @@
-class Circle {
-  func init(radius) {
-    this.radius = radius;
-  }
-
-  func area() {
-    return 3.14 * this.radius * this.radius;
-  }
-
-  static square(n) {
-    return n * n;
+class Doughnut {
+  func cook() {
+    print("Fry until golden brown.");
   }
 }
 
-
-func hello(name) {
-  print("Hello, " + name);
+class BostonCream <- Doughnut {
+  func cook() {
+    super.cook();
+    print("Stuff it with cream.");
+  }
 }
 
-var circle = Circle(2);
-circle.hello = hello("bob");
+BostonCream().cook();

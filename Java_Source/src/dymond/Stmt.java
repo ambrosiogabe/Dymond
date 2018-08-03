@@ -45,10 +45,11 @@ public abstract class Stmt{
 	}
 
 	public static class Class extends Stmt{
-		public Class(Token name, List<Stmt.Function> methods, List<Stmt.Function> staticMethods ) {
+		public Class(Token name, List<Stmt.Function> methods, List<Stmt.Function> staticMethods, Expr.Variable superclass) {
 			this.name = name;
 			this.methods = methods;
 			this.staticMethods = staticMethods;
+			this.superclass = superclass;
 		}
 
 		public <R> R accept(Visitor<R> visitor) {
@@ -58,7 +59,8 @@ public abstract class Stmt{
 
 		public final Token name;
 		public final List<Stmt.Function> methods;
-		public final List<Stmt.Function> staticMethods; 
+		public final List<Stmt.Function> staticMethods;
+		public final Expr.Variable superclass;
 	}
 
 	public static class Expression extends Stmt{

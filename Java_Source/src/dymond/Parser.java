@@ -82,6 +82,13 @@ public class Parser {
 	
 	private Stmt classDeclaration() {
 		Token name = consume(IDENTIFIER, "Expect a class name.");
+		
+		Expr.Variable superclass = null;
+		if (match(LEFT_ARROW)) {
+			consume(IDENTIFIER, "Expect superclass name.");
+			superclass = new Expr.Variable(previous());
+		}
+		
 		consume(LEFT_BRACE, "Expect '{' before class body.");
 		
 		List<Stmt.Function> methods = new ArrayList<>();
@@ -90,7 +97,7 @@ public class Parser {
 			if (match(STATIC)) staticMethods.add(function("staticMethod"));
 			else if (match(FUNC)) methods.add(function("method"));
 			else {
-				Dymond.error(peek().line, "Unexpected token.", peek().lineText, peek().column);
+				Dymond.error(peek().line, "Expected keyword 'func' or keyword 'static'.", peek().lineText, peek().column);
 				while (!check(STATIC) && !check(FUNC) && !check(RIGHT_BRACE) && !isAtEnd()) {
 					consume(peek().type, "");
 				}
@@ -99,7 +106,7 @@ public class Parser {
 		
 		consume(RIGHT_BRACE, "Expect '}' after class body.");
 		
-		return new Stmt.Class(name,  methods, staticMethods);
+		return new Stmt.Class(name,  methods, staticMethods, superclass);
 	}
 	
 	private Stmt returnStatement() {
@@ -433,6 +440,13 @@ public class Parser {
 		if (match(IDENTIFIER)) return new Expr.Variable(previous());
 		if (match(NUMBER, STRING)) return new Expr.Literal(previous().literal);
 		if (match(THIS)) return new Expr.This(previous());
+		
+		if (match(SUPER)) {
+			Token keyword = previous();
+			consume(DOT, "Expect '.' after 'super'.");
+			Token method = consume(IDENTIFIER, "Expect superclass method name.");
+			return new Expr.Super(keyword, method);
+		}
 		
 		if (match(LEFT_PAREN)) {
 			Expr expr = expression();

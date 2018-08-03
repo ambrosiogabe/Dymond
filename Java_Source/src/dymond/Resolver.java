@@ -21,7 +21,8 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 	
 	private enum ClassType {
 		NONE,
-		CLASS
+		CLASS,
+		SUBCLASS
 	}
 	
 	private final Interpreter interpreter;
@@ -31,6 +32,17 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 	
 	public Resolver(Interpreter interpreter) {
 		this.interpreter = interpreter;
+	}
+	
+	@Override
+	public Void visitSuperExpr(Expr.Super expr) {
+		if (currentClass == ClassType.NONE) {
+			Dymond.error(expr.keyword.line, "Cannot use 'super' outside of a class.", expr.keyword.lineText, expr.keyword.column);
+		} else if (currentClass != ClassType.SUBCLASS) {
+			Dymond.error(expr.keyword.line, "Cannot use 'super' in a class with no superclass.", expr.keyword.lineText, expr.keyword.column);
+		}
+		resolveLocal(expr, expr.keyword);
+		return null;
 	}
 	
 	@Override
@@ -63,7 +75,18 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 		currentClass = ClassType.CLASS;
 		
 		declare(stmt.name);
+		
+		if (stmt.superclass != null) {
+			currentClass = ClassType.SUBCLASS;
+			resolve(stmt.superclass);
+		}
+		
 		define(stmt.name);
+		
+		if (stmt.superclass != null) {
+			beginScope();
+			scopes.peek().put("super",  true);
+		}
 		
 		beginScope();
 		scopes.peek().put("this", true);
@@ -82,6 +105,8 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 		}
 		
 		endScope();
+		
+		if (stmt.superclass != null) endScope();
 		
 		currentClass = enclosingClass;
 		return null;

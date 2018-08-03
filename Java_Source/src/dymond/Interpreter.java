@@ -38,6 +38,24 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 	}
 	
 	@Override
+	public Object visitSuperExpr(Expr.Super expr) {
+		int distance = locals.get(expr);
+		DymondClass superclass = (DymondClass)environment.getAt(distance, "super");
+		
+		// "this" is always one level nearer than "super"'s environment
+		DymondInstance object = (DymondInstance)environment.getAt(distance - 1,  "this");
+		
+		DymondFunction method = superclass.findMethod(object,  expr.method.lexeme);
+		DymondFunction staticMethod = superclass.findStaticMethod(object, expr.method.lexeme);
+		if(method == null && staticMethod == null) {
+			throw new RuntimeError(expr.method, "Undefined property '" + expr.method.lexeme + "'.");
+		}
+		
+		if(staticMethod == null) return method;
+		return staticMethod;
+	}
+	
+	@Override
 	public Object visitThisExpr(Expr.This expr) {
 		return lookUpVariable(expr.keyword, expr);
 	}
@@ -54,7 +72,19 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 	
 	@Override
 	public Void visitClassStmt(Stmt.Class stmt) {
+		Object superclass = null;
+		if (stmt.superclass != null) {
+			superclass = evaluate(stmt.superclass);
+			if (!(superclass instanceof DymondClass)) {
+				throw new RuntimeError(stmt.superclass.name, "Superclass must be a class.");
+			}
+		}
 		environment.define(stmt.name.lexeme, null);
+		
+		if (stmt.superclass != null) {
+			environment = new Environment(environment);
+			environment.define("super", superclass);
+		}
 		
 		Map<String, DymondFunction> methods = new HashMap<>();
 		Map<String, DymondFunction> staticMethods = new HashMap<>();
@@ -68,7 +98,10 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 			staticMethods.put(staticMethod.name.lexeme, function);
 		}
 		
-		DymondClass klass = new DymondClass(stmt.name.lexeme, methods, staticMethods);
+		DymondClass klass = new DymondClass(stmt.name.lexeme, methods, staticMethods, (DymondClass)superclass);
+		
+		if (superclass != null) environment = environment.enclosing;
+		
 		environment.assign(stmt.name,  klass);
 		return null;
 	}

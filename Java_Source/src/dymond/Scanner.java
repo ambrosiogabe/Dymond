@@ -80,9 +80,19 @@ public class Scanner {
 			case '*': addToken(match('=') ? TIMES_EQUAL : STAR); break;
 			case '!': addToken(match('=') ? BANG_EQUAL : BANG); break;
 			case '=': addToken(match('=') ? EQUAL_EQUAL : EQUAL);break;
-			case '<': addToken(match('=') ? LESS_EQUAL : LESS); break;
 			case '>': addToken(match('=') ? GREATER_EQUAL : GREATER); break;
 			case '%': addToken(match('=') ? MODULO_EQUAL : MODULO); break;
+			case '<': 
+				if(match('=')) {
+					addToken(LESS_EQUAL);
+					break;
+				} else if (match('-')) {
+					addToken(LEFT_ARROW);
+					break;
+				} else {
+					addToken(LESS);
+					break;
+				}
 			case '-': 
 				if(match('=')) {
 					addToken(MINUS_EQUAL);
