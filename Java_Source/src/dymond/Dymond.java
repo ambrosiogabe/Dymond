@@ -24,7 +24,8 @@ public class Dymond {
 		} else if (args.length == 1) {
 			//String wd = System.getProperty("user.dir");
 			//String file = wd + File.separatorChar + args[0]; 
-			runFile(args[0]);
+			//runFile(args[0]);
+			runPrompt();
 		} else {
 			runPrompt();
 		}

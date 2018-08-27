@@ -1,89 +1,61 @@
 # Dymond
-This is a programming language that was build in Python and has a Python-ish way of working. The program is parsed using a custom parser that I built. The parser breaks the language up into a bunch of tokens that it sends to my Interpreter. The interpreter then builds an abstract syntax tree and interprets what to do at each stage.
+This is an amazing language that is being built by yours truly! It has been a blast creating this and I hope some people will find use out of this.
+Also, since I love helping others, if there are any additions that you would like to see, simply email me at ambrosiogabe@gmail.com.
+
+## What is Dymond?
+Dymond is an Object Oriented Programming language currently programmed in Java. In this repository there are three main folders, C-Source, Java, and Python.
+Within each of these folder are different implementations of Dymond. The Python and Java version both use an AST, and are quite slow as a result. I plan
+on building a Virtual Machine and compiler that compiles Dymond down to DByteCode. This will enhance the running speeds quite dramatically.
+
+Coding in Dymond feels very similar to coding in Javascript, the only difference is that the underlying principles are closer to Python. What I mean by that
+is that a lot of features in Python are mimicked in Dymond, but the syntax looks more like Javascript (Maybe I should call it PythonScript?).
+
+Below I will give a slight overview of what you will find in each languages implementation of Dymond.
+
+## Python
+The Python implementation is the most inaccurate and sparse, so I would not recommend using it. Why keep it then? Well, this was my first stab
+at how to go about building an **entire** language. So, I like to keep it there so that users can follow along the evolution of Dymond. It is fun to
+experiment in, but the syntax is wildly different than what I actually settled on.
+
+## Java
+This was my next go at building a successful language. I changed a few things, for instance there is no longer declared types, they are inferred at runtime
+now, also it has the whole Object Oriented part of OOP enabled! So, this is more reliable than the Python implementation and provides a solid overview
+of what the final language will look like. Give the contents a look to see how it all fits together.
 
 ## To Run
 Right now the programming language is still incomplete. Although it has quite a bit of functionality right now. If you would like to test it so far follow these instructions.
 
-NOTE: You need Python 3 installed in order to be able to run this programming language. So install that first if you have not already.
+NOTE: You need Java installed on your computer in order for this to work.
 
 1. Download the repository to a simple location on your PC, e.g C:\\Dymond or ~/Dymond
-2. Once the repository is cloned, you need to add the place you installed it to your PATH environment variable.
-3. In Windows you type in <code>env</code> on the search bar. Then open up Edit Environment Variables.
-4. Click Enviornment Variables... Then search for PATH under System Variables.
-5. Double click PATH and then click New. Type in the path where you installed dymond and then click OK.
+2. Edit the Programs/test_2.dy file to any program you would like to create.
+3. Open a terminal or Cmd and change into the Java_Source/src directory.
+4. Run javac dymond.Dymond
+5. Change into the Programs/bin directory.
+6. Run java dymond.Dymond
 
-To test if it works, you need to create a file and try it out. Create a file called <code>test.dy</code>. Open up the file and copy and paste the following code into it:
-
-```
-Int i = 0;
-while(i < 10) {
-  print(i);
-  i++;
-}
-```
-
-Then open up a Terminal or Command Prompt window in the same directory as the file you just created. Then type in <code>Dymond.py test.dy</code>. This should open a new Terminal or Command prompt and output something like this:
+Here is a little sample of what the code looks like, with some comments explaining everything.
 
 ```
-0
-1
-2
-3
-4
-5
-6
-7
-8
-9
-Press enter to exit...
+# This creates a Donut class
+class Donut {
+  # This is the initialization function
+  func init() {
+    print("I am a donut.");
+  }
+}
+
+# This class extends Donut, or is a child of the Donut class
+class GlazedDonut <- Donut {
+  func init() {
+    # This calls its parent's init function
+    super.init();
+    print("I am a glazed donut.");
+  }
+}
+
+# I will add more and test later :)
 ```
-
-Press enter to exit, and you have confirmed that Dymond now works on your computer! To run any other file simply create the file, and then run <code>Dymond.py file_name.dy</code> in the Terminal/Cmd and it will run you programs.
-
-## How to Code in Dymond
-Right now Dymond is pretty limited in its capabilities. I will list a sample program showcasing the majority of what Dymond is able to do so far.
-
-```
-Int my_int = 0;
-Decimal my_decimal = 3e10;
-Decimal my_other_decimal = 3.14;
-Bool my_bool = True;
-Bool my_other_bool = False;
-
-for(Int i=0; i < 10; i++) {
-  print(i);
-}
-print("\n\n");
-
-if(my_int == 0) {
-  print(toString(my_int) + "\n");
-}
-
-if(my_int == 10) {
-  #do nothing because it doesn't
-} else {
-  print(my_int);
-}
-
-while(my_int < 10) {
-  print(my_int);
-  my_int++;
-}
-print("\n\n");
-
-String user_in = input("Type some stuff in: ");
-if(user_in == "Hi") {
-  print("Hi back :)");
-}
-
-Int user_in_cast_to_int = toInt(input("Type an integer: "));
-print(user_in_cast_to_int + 4);
-
-Decimal dec = toDecimal(input("Type a decimal: "));
-print(dec * 3.4);
-```
-
-As you can see the language currently supports for loops, while loops, if-else statements (it does not support if-else if-else yet...), casting, type checking, printing, and user input. I plan on adding more functionality as I get time. I also plan on creating an IDE so that you can experiment with simple statements.
 
 ## Parser
 The parser goes through and looks for all the keywords and tokens that are defined in the TokenType class. It will turn a statement such as:

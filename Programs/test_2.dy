@@ -1,9 +1,17 @@
-func myPrint(text, sep=" ", end="the end") {
-  print(text + sep + end);
+
+
+class Donut {
+  func init() {
+    print("I am a donut.");
+  }
 }
 
-var str = "Hi there";
-
-for (var i=0; i < len(str); i++) {
-  print(str[i]);
+class BostonCreme <- Donut {
+  func init() {
+    super.init();
+    print("I am boston creme.");
+  }
 }
+
+var donut = Donut();
+var bostonCreme = BostonCreme();
