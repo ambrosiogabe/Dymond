@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27004.2009
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CDymond", "CDymond.vcxproj", "{BC5E3498-2B0C-44F6-BB77-98FB284CCC1F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BC5E3498-2B0C-44F6-BB77-98FB284CCC1F}.Debug|x64.ActiveCfg = Debug|x64
+		{BC5E3498-2B0C-44F6-BB77-98FB284CCC1F}.Debug|x64.Build.0 = Debug|x64
+		{BC5E3498-2B0C-44F6-BB77-98FB284CCC1F}.Release|x64.ActiveCfg = Release|x64
+		{BC5E3498-2B0C-44F6-BB77-98FB284CCC1F}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {EFAEE486-3B3A-4874-9604-1D57E9A50C3B}
+	EndGlobalSection
+EndGlobal

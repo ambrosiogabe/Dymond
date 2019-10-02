@@ -1,8 +1,0 @@
-﻿  main.c
-c:\users\ambro\documents\dymond\c_source\cdymond\main.c(17): warning C4013: 'system' undefined; assuming extern returning int
-  debug.c
-c:\users\ambro\documents\dymond\c_source\cdymond\debug.c(26): warning C4013: 'simpleInstruction' undefined; assuming extern returning int
-c:\users\ambro\documents\dymond\c_source\cdymond\debug.c(28): warning C4013: 'constantInstruction' undefined; assuming extern returning int
-  chunk.c
-  Generating Code...
-  CDymond.vcxproj -> C:\Users\ambro\Documents\Dymond\C_Source\CDymond\Debug\CDymond.exe

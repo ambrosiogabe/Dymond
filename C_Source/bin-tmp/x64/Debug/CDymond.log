@@ -1,0 +1,4 @@
+﻿  debug.c
+c:\users\ambro\documents\repos\dymond\c_source\src\debug.c(26): warning C4013: 'constantInstruction' undefined; assuming extern returning int
+c:\users\ambro\documents\repos\dymond\c_source\src\debug.c(28): warning C4013: 'simpleInstruction' undefined; assuming extern returning int
+  CDymond.vcxproj -> C:\Users\ambro\Documents\repos\Dymond\C_Source\\bin\x64\Debug\CDymond.exe
