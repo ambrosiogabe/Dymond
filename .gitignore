@@ -1,8 +1,10 @@
-.vs/
+**/.vs
 
-bin/
-bin-tmp/
+**/bin
+**/bin-tmp
 
 *.user
 *.obj
 *.log
+
+**/__pycache__/
