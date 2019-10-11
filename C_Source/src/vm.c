@@ -90,11 +90,23 @@ static InterpretResult run() {
 				push(constant);
 				break;
 			}
-			case OP_ADD:       BINARY_OP(+); break;
-			case OP_SUBTRACT:  BINARY_OP(-); break;
-			case OP_MULTIPLY:  BINARY_OP(*); break;
-			case OP_DIVIDE:    BINARY_OP(/); break;
-			case OP_NEGATE:    push(-pop()); break;
+			case OP_INT_DIVIDE: {
+				int b = pop();
+				int a = pop();
+				push(a / b);
+				break;
+			}
+			case OP_MODULO: {
+				int b = pop();
+				int a = pop();
+				push(a % b);
+				break;
+			}
+			case OP_ADD:         BINARY_OP(+); break;
+			case OP_SUBTRACT:    BINARY_OP(-); break;
+			case OP_MULTIPLY:    BINARY_OP(*); break;
+			case OP_DIVIDE:      BINARY_OP(/); break;
+			case OP_NEGATE:      push(-pop()); break;
 			case OP_RETURN: {
 				printValue(pop());
 				printf("\n");

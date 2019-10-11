@@ -1,13 +1,2 @@
-﻿  Chunk.c
-  compiler.c
-  debug.c
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\debug.c(26,34): warning C4013:  'constantLongInstruction' undefined; assuming extern returning int
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\debug.c(28,30): warning C4013:  'constantInstruction' undefined; assuming extern returning int
-  main.c
-  memory.c
-  scanner.c
-  value.c
-  vm.c
-  Generating Code...
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\debug.c(30,28): warning C4013:  'simpleInstruction' undefined; assuming extern returning int
+﻿  compiler.c
   CDymond.vcxproj -> C:\Users\Gabe\Documents\repos\Dymond\C_Source\\bin\x64\Debug\CDymond.exe

@@ -25,8 +25,9 @@ typedef enum {
 	PREC_COMPARISON, // < > <= >=
 	PREC_TERM,       // + -
 	PREC_FACTOR,     // * /
-	PREC_UNARY,      // ! - ++ --
-	PREC_CALL,       // . () []
+	PREC_UNARY,      // ! - prefix ++ prefix --
+	PREC_POST_UNARY, // ++ --
+	PREC_CALL,       // . () [] 
 	PREC_PRIMARY
 } Precedence;
 
@@ -135,10 +136,12 @@ static void binary() {
 
 	// Emit the operator instruction
 	switch (operatorType) {
-		case TOKEN_PLUS:    emitByte(OP_ADD); break;
-		case TOKEN_MINUS:   emitByte(OP_SUBTRACT); break;
-		case TOKEN_TIMES:   emitByte(OP_MULTIPLY); break;
-		case TOKEN_DIV:     emitByte(OP_DIVIDE); break;
+		case TOKEN_PLUS:         emitByte(OP_ADD); break;
+		case TOKEN_MINUS:        emitByte(OP_SUBTRACT); break;
+		case TOKEN_TIMES:        emitByte(OP_MULTIPLY); break;
+		case TOKEN_DIV:          emitByte(OP_DIVIDE); break;
+		case TOKEN_INTEGER_DIV:  emitByte(OP_INT_DIVIDE); break;
+		case TOKEN_MODULO:       emitByte(OP_MODULO); break;
 		default:
 			return;
 	}
@@ -163,6 +166,32 @@ static void unary() {
 	// Emit the operator instruction
 	switch (operatorType) {
 		case TOKEN_MINUS: emitByte(OP_NEGATE); break;
+		case TOKEN_PLUS_PLUS: 
+			emitConstant(1);
+			emitByte(OP_ADD);
+			break;
+		case TOKEN_MINUS_MINUS:
+			emitConstant(1);
+			emitByte(OP_SUBTRACT);
+			break;
+		default:
+			return;
+	}
+}
+
+static void postUnary() {
+	TokenType operatorType = parser.previous.type;
+
+	// We already have the operand on the stack
+	switch (operatorType) {
+		case TOKEN_PLUS_PLUS:
+			emitConstant(1);
+			emitByte(OP_ADD);
+			break;
+		case TOKEN_MINUS_MINUS:
+			emitConstant(1);
+			emitByte(OP_SUBTRACT);
+			break;
 		default:
 			return;
 	}
@@ -197,8 +226,8 @@ ParseRule rules[] = {
 	{ nullptr,     nullptr,    PREC_NONE   },       // TOKEN_MODULO_EQUAL 
 	{ nullptr,     nullptr,    PREC_NONE   },       // TOKEN_PLUS_EQUAL  
 	{ nullptr,     nullptr,    PREC_NONE   },       // TOKEN_MINUS_EQUAL  
-	{ nullptr,     nullptr,    PREC_TERM   },       // TOKEN_PLUS_PLUS 
-	{ nullptr,     nullptr,    PREC_TERM   },       // TOKEN_MINUS_MINUS 
+	{ unary,       postUnary,  PREC_UNARY  },       // TOKEN_PLUS_PLUS 
+	{ unary,       postUnary,  PREC_UNARY  },       // TOKEN_MINUS_MINUS 
 	{ nullptr,     nullptr,    PREC_NONE   },       // TOKEN_TIMES_EQUAL 
 	{ nullptr,     binary,     PREC_FACTOR },       // TOKEN_TIMES 
 	{ nullptr,     nullptr,    PREC_NONE   },       // TOKEN_IDENTIFIER      
