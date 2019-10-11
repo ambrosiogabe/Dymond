@@ -17,6 +17,10 @@ static void repl() {
 			break;
 		}
 
+		if (strcmp("exit\n", line) == 0 || strcmp("quit\n", line) == 0) {
+			break;
+		}
+
 		interpret(line);
 	}
 }

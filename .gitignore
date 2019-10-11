@@ -3,6 +3,4 @@
 bin/
 bin-tmp/
 
-C_Source/
-
 *.user

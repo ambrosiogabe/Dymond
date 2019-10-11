@@ -32,7 +32,7 @@ typedef struct {
 
 void initChunk(Chunk* chunk);
 void writeChunk(Chunk* chunk, uint8_t byte, int line);
-void writeConstant(Chunk* chunk, Value value, int line);
+bool writeConstant(Chunk* chunk, Value value, int line);
 int addConstant(Chunk* chunk, Value value);
 int getLine(Chunk* chunk, int instructionNumber);
 int hasLine(Chunk* chunk, int line);

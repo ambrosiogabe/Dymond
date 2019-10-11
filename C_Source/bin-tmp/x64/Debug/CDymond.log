@@ -4,66 +4,10 @@
 C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\debug.c(26,34): warning C4013:  'constantLongInstruction' undefined; assuming extern returning int
 C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\debug.c(28,30): warning C4013:  'constantInstruction' undefined; assuming extern returning int
   main.c
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\debug.c(30,28): warning C4013:  'simpleInstruction' undefined; assuming extern returning int
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\main.c(25,1): error C4996:  'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
   memory.c
   scanner.c
-C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\ucrt\stdio.h(208): message :  see declaration of 'fopen'
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(32,16): warning C4013:  'skipWhitespace' undefined; assuming extern returning int
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(36,13): warning C4013:  'isAtEnd' undefined; assuming extern returning int
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(36,33): warning C4013:  'makeToken' undefined; assuming extern returning int
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(36,44): error C2440:  'return': cannot convert from 'int' to 'Token'
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(38,18): warning C4013:  'advance' undefined; assuming extern returning int
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(40,35): warning C4013:  'identifier' undefined; assuming extern returning int
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(40,37): error C2440:  'return': cannot convert from 'int' to 'Token'
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(41,31): warning C4013:  'number' undefined; assuming extern returning int
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(41,33): error C2440:  'return': cannot convert from 'int' to 'Token'
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(44,47): error C2440:  'return': cannot convert from 'int' to 'Token'
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(45,48): error C2440:  'return': cannot convert from 'int' to 'Token'
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(46,47): error C2440:  'return': cannot convert from 'int' to 'Token'
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(47,48): error C2440:  'return': cannot convert from 'int' to 'Token'
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(48,49): error C2440:  'return': cannot convert from 'int' to 'Token'
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(49,50): error C2440:  'return': cannot convert from 'int' to 'Token'
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(50,46): error C2440:  'return': cannot convert from 'int' to 'Token'
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(51,42): error C2440:  'return': cannot convert from 'int' to 'Token'
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(52,45): error C2440:  'return': cannot convert from 'int' to 'Token'
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(53,40): error C2440:  'return': cannot convert from 'int' to 'Token'
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(55,26): warning C4013:  'match' undefined; assuming extern returning int
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(55,95): error C2440:  'return': cannot convert from 'int' to 'Token'
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(57,96): error C2440:  'return': cannot convert from 'int' to 'Token'
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(59,99): error C2440:  'return': cannot convert from 'int' to 'Token'
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(61,95): error C2440:  'return': cannot convert from 'int' to 'Token'
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(63,66): error C2440:  'return': cannot convert from 'int' to 'Token'
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(65,68): error C2440:  'return': cannot convert from 'int' to 'Token'
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(67,64): error C2440:  'return': cannot convert from 'int' to 'Token'
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(69,66): error C2440:  'return': cannot convert from 'int' to 'Token'
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(71,70): error C2440:  'return': cannot convert from 'int' to 'Token'
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(72,26): warning C4013:  'string' undefined; assuming extern returning int
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(72,28): error C2440:  'return': cannot convert from 'int' to 'Token'
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(75,19): warning C4013:  'errorToken' undefined; assuming extern returning int
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(75,44): error C2440:  'return': cannot convert from 'int' to 'Token'
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(78,13): error C2371:  'isAtEnd': redefinition; different basic types
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(82,13): error C2371:  'advance': redefinition; different basic types
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(102,13): error C2371:  'match': redefinition; different basic types
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(110,14): error C2371:  'makeToken': redefinition; different basic types
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(120,14): error C2371:  'errorToken': redefinition; different basic types
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(130,13): error C2371:  'skipWhitespace': redefinition; different basic types
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(152,34): warning C4047:  '==': 'const char *' differs in levels of indirection from 'int'
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(186,32): warning C4013:  'checkKeyWord' undefined; assuming extern returning int
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(189,31): warning C4013:  'checKeyword' undefined; assuming extern returning int
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(229,14): error C2371:  'identifier': redefinition; different basic types
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(232,36): error C2440:  'return': cannot convert from 'int' to 'Token'
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(235,14): error C2371:  'string': redefinition; different basic types
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(241,58): error C2440:  'return': cannot convert from 'int' to 'Token'
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(245,32): error C2440:  'return': cannot convert from 'int' to 'Token'
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(248,14): error C2371:  'number': redefinition; different basic types
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(271,52): error C2440:  'return': cannot convert from 'int' to 'Token'
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(287,51): error C2440:  'return': cannot convert from 'int' to 'Token'
   value.c
   vm.c
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\scanner.c(291,32): error C2440:  'return': cannot convert from 'int' to 'Token'
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\vm.c(25,10): warning C4477:  'printf' : format string '%d' requires an argument of type 'int', but variadic argument 1 has type '__int64'
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\vm.c(25,10): message :  consider using '%lld' in the format string
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\vm.c(25,10): message :  consider using '%Id' in the format string
   Generating Code...
-C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\vm.c(25,10): message :  consider using '%I64d' in the format string
+C:\Users\Gabe\Documents\repos\Dymond\C_Source\src\debug.c(30,28): warning C4013:  'simpleInstruction' undefined; assuming extern returning int
+  CDymond.vcxproj -> C:\Users\Gabe\Documents\repos\Dymond\C_Source\\bin\x64\Debug\CDymond.exe

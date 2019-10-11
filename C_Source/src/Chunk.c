@@ -47,19 +47,24 @@ void writeChunk(Chunk* chunk, uint8_t byte, int line) {
 	chunk->count++;
 }
 
-void writeConstant(Chunk* chunk, Value value, int line) {
+bool writeConstant(Chunk* chunk, Value value, int line) {
 	int constant = addConstant(chunk, value);
-	if (constant < 256) {
+	if (constant < UINT8_MAX) {
 		writeChunk(chunk, OP_CONSTANT, line);
 		writeChunk(chunk, constant, line);
-		return;
+		return true;
 	} 
+
+	if (constant > UINT16_MAX) {
+		return false;
+	}
 
 	writeChunk(chunk, OP_CONSTANT_LONG, line);
 	uint8_t lowerHalf = constant & 0xFF;
 	uint8_t upperHalf = (constant & 0xFF00) >> 8;
 	writeChunk(chunk, upperHalf, line);
 	writeChunk(chunk, lowerHalf, line);
+	return true;
 }
 
 int addConstant(Chunk* chunk, Value value) {
