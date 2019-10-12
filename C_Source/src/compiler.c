@@ -136,12 +136,18 @@ static void binary() {
 
 	// Emit the operator instruction
 	switch (operatorType) {
-		case TOKEN_PLUS:         emitByte(OP_ADD); break;
-		case TOKEN_MINUS:        emitByte(OP_SUBTRACT); break;
-		case TOKEN_TIMES:        emitByte(OP_MULTIPLY); break;
-		case TOKEN_DIV:          emitByte(OP_DIVIDE); break;
-		case TOKEN_INTEGER_DIV:  emitByte(OP_INT_DIVIDE); break;
-		case TOKEN_MODULO:       emitByte(OP_MODULO); break;
+		case TOKEN_BANG_EQUAL:    emitBytes(OP_EQUAL, OP_NOT); break;
+		case TOKEN_EQUAL_EQUAL:   emitByte(OP_EQUAL); break;
+		case TOKEN_GREATER:       emitByte(OP_GREATER); break;
+		case TOKEN_GREATER_EQUAL: emitByte(OP_LESS, OP_NOT); break;
+		case TOKEN_LESS:          emitByte(OP_LESS); break;
+		case TOKEN_LESS_EQUAL:    emitByte(OP_GREATER, OP_NOT); break;
+		case TOKEN_PLUS:          emitByte(OP_ADD); break;
+		case TOKEN_MINUS:         emitByte(OP_SUBTRACT); break;
+		case TOKEN_TIMES:         emitByte(OP_MULTIPLY); break;
+		case TOKEN_DIV:           emitByte(OP_DIVIDE); break;
+		case TOKEN_INTEGER_DIV:   emitByte(OP_INT_DIVIDE); break;
+		case TOKEN_MODULO:        emitByte(OP_MODULO); break;
 		default:
 			return;
 	}
@@ -154,7 +160,13 @@ static void grouping() {
 
 static void number() {
 	double value = strtod(parser.previous.start, nullptr);
-	emitConstant(value);
+	emitConstant(NUMBER_VAL(value));
+}
+
+
+// Add support for \n characters and stuff then add translate characters here
+static void string() {
+	emitConstant(OBJ_VAL(copyString(parser.previous.start + 1, parser.previous.length - 2)));
 }
 
 static void unary() {
@@ -165,14 +177,19 @@ static void unary() {
 
 	// Emit the operator instruction
 	switch (operatorType) {
-		case TOKEN_MINUS: emitByte(OP_NEGATE); break;
+		case TOKEN_MINUS: 
+			emitByte(OP_NEGATE); 
+			break;
 		case TOKEN_PLUS_PLUS: 
-			emitConstant(1);
+			emitConstant(NUMBER_VAL(1));
 			emitByte(OP_ADD);
 			break;
 		case TOKEN_MINUS_MINUS:
-			emitConstant(1);
+			emitConstant(NUMBER_VAL(1));
 			emitByte(OP_SUBTRACT);
+			break;
+		case TOKEN_BANG:
+			emitByte(OP_NOT); 
 			break;
 		default:
 			return;
@@ -185,13 +202,23 @@ static void postUnary() {
 	// We already have the operand on the stack
 	switch (operatorType) {
 		case TOKEN_PLUS_PLUS:
-			emitConstant(1);
+			emitConstant(NUMBER_VAL(1));
 			emitByte(OP_ADD);
 			break;
 		case TOKEN_MINUS_MINUS:
-			emitConstant(1);
+			emitConstant(NUMBER_VAL(1));
 			emitByte(OP_SUBTRACT);
 			break;
+		default:
+			return;
+	}
+}
+
+static void literal() {
+	switch (parser.previous.type) {
+		case TOKEN_FALSE: emitByte(OP_FALSE); break;
+		case TOKEN_NULL: emitByte(OP_NULL); break;
+		case TOKEN_TRUE: emitByte(OP_TRUE); break;
 		default:
 			return;
 	}
@@ -211,14 +238,14 @@ ParseRule rules[] = {
 	{ nullptr,     nullptr,    PREC_NONE   },       // TOKEN_SEMICOLON      
 	{ nullptr,     nullptr,    PREC_NONE   },       // TOKEN_QUESTION
 	{ nullptr,     nullptr,    PREC_NONE   },       // TOKEN_COLON    
-	{ nullptr,     nullptr,    PREC_NONE   },       // TOKEN_BANG            
-	{ nullptr,     nullptr,    PREC_NONE   },       // TOKEN_BANG_EQUAL      
+	{ unary,       nullptr,    PREC_NONE   },       // TOKEN_BANG            
+	{ nullptr,     binary,     PREC_EQUALITY },     // TOKEN_BANG_EQUAL      
 	{ nullptr,     nullptr,    PREC_NONE   },       // TOKEN_EQUAL        
-	{ nullptr,     nullptr,    PREC_NONE   },       // TOKEN_EQUAL_EQUAL     
-	{ nullptr,     nullptr,    PREC_NONE   },       // TOKEN_GREATER         
-	{ nullptr,     nullptr,    PREC_NONE   },       // TOKEN_GREATER_EQUAL   
-	{ nullptr,     nullptr,    PREC_NONE   },       // TOKEN_LESS            
-	{ nullptr,     nullptr,    PREC_NONE   },       // TOKEN_LESS_EQUAL      
+	{ nullptr,     binary,     PREC_EQUALITY   },   // TOKEN_EQUAL_EQUAL     
+	{ nullptr,     binary,     PREC_COMPARISON },   // TOKEN_GREATER         
+	{ nullptr,     binary,     PREC_COMPARISON },   // TOKEN_GREATER_EQUAL   
+	{ nullptr,     binary,     PREC_COMPARISON },   // TOKEN_LESS            
+	{ nullptr,     binary,     PREC_COMPARISON },   // TOKEN_LESS_EQUAL      
 	{ nullptr,     binary,     PREC_FACTOR },       // TOKEN_DIV     
 	{ nullptr,     binary,     PREC_FACTOR },       // INTEGER_DIV 
 	{ nullptr,     nullptr,    PREC_NONE   },       // TOKEN_DIV_EQUAL 
@@ -231,22 +258,22 @@ ParseRule rules[] = {
 	{ nullptr,     nullptr,    PREC_NONE   },       // TOKEN_TIMES_EQUAL 
 	{ nullptr,     binary,     PREC_FACTOR },       // TOKEN_TIMES 
 	{ nullptr,     nullptr,    PREC_NONE   },       // TOKEN_IDENTIFIER      
-	{ nullptr,     nullptr,    PREC_NONE   },       // TOKEN_STRING          
+	{ string,      nullptr,    PREC_NONE   },       // TOKEN_STRING          
 	{ number,      nullptr,    PREC_NONE   },       // TOKEN_NUMBER          
 	{ nullptr,     nullptr,    PREC_NONE   },       // TOKEN_AND             
 	{ nullptr,     nullptr,    PREC_NONE   },       // TOKEN_CLASS           
 	{ nullptr,     nullptr,    PREC_NONE   },       // TOKEN_ELSE            
-	{ nullptr,     nullptr,    PREC_NONE   },       // TOKEN_FALSE           
+	{ literal,     nullptr,    PREC_NONE   },       // TOKEN_FALSE           
 	{ nullptr,     nullptr,    PREC_NONE   },       // TOKEN_FOR             
 	{ nullptr,     nullptr,    PREC_NONE   },       // TOKEN_FUNCTION             
 	{ nullptr,     nullptr,    PREC_NONE   },       // TOKEN_IF              
-	{ nullptr,     nullptr,    PREC_NONE   },       // TOKEN_NULL             
+	{ literal,     nullptr,    PREC_NONE   },       // TOKEN_NULL             
 	{ nullptr,     nullptr,    PREC_NONE   },       // TOKEN_OR              
 	{ nullptr,     nullptr,    PREC_NONE   },       // TOKEN_PRINT           
 	{ nullptr,     nullptr,    PREC_NONE   },       // TOKEN_RETURN          
 	{ nullptr,     nullptr,    PREC_NONE   },       // TOKEN_SUPER           
 	{ nullptr,     nullptr,    PREC_NONE   },       // TOKEN_THIS            
-	{ nullptr,     nullptr,    PREC_NONE   },       // TOKEN_TRUE            
+	{ literal,     nullptr,    PREC_NONE   },       // TOKEN_TRUE            
 	{ nullptr,     nullptr,    PREC_NONE   },       // TOKEN_VAR             
 	{ nullptr,     nullptr,    PREC_NONE   },       // TOKEN_WHILE     
 	{ nullptr,     nullptr,    PREC_NONE   },       // TOKEN_BREAK 
