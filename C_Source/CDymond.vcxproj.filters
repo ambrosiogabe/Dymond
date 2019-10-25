@@ -10,6 +10,7 @@
     <ClCompile Include="src\compiler.c" />
     <ClCompile Include="src\scanner.c" />
     <ClCompile Include="src\object.c" />
+    <ClCompile Include="src\table.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\common.h" />
@@ -21,5 +22,6 @@
     <ClInclude Include="src\compiler.h" />
     <ClInclude Include="src\scanner.h" />
     <ClInclude Include="src\object.h" />
+    <ClInclude Include="src\table.h" />
   </ItemGroup>
 </Project>

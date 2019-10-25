@@ -3,6 +3,7 @@
 
 #include "memory.h"
 #include "object.h"
+#include "table.h"
 #include "value.h"
 #include "vm.h"
 
@@ -18,19 +19,42 @@ static Obj* allocateObject(size_t size, ObjType type) {
 	return object;
 }
 
-static ObjString* allocateString(char* chars, int length) {
+static ObjString* allocateString(char* chars, int length, uint32_t hash) {
 	ObjString* string = ALLOCATE_OBJ(ObjString, OBJ_STRING);
 	string->length = length;
 	string->chars = chars;
+	string->hash = hash;
+
+	tableSet(&vm.strings, string, NULL_VAL);
 
 	return string;
 }
 
+static uint32_t hashString(const char* key, int length) {
+	uint32_t hash = 2166136261u;
+
+	for (int i = 0; i < length; i++) {
+		hash ^= key[i];
+		hash *= 16777619;
+	}
+
+	return hash;
+}
+
 ObjString* takeString(char* chars, int length) {
-	return allocateString(chars, length);
+	uint32_t hash = hashString(chars, length);
+	ObjString* interned = tableFindString(&vm.strings, chars, length, hash);
+
+	if (interned != nullptr) {
+		FREE_ARRAY(char, chars, length + 1);
+		return interned;
+	}
+
+	return allocateString(chars, length, hash);
 }
 
 ObjString* copyString(const char* chars, int length) {
+	uint32_t hash = hashString(chars, length);
 	int sanitizedLength = length;
 	for (char* c = chars; c < chars + length; c++) {
 		if (*c == '\\' && c + 1 < chars + length) {
@@ -38,22 +62,27 @@ ObjString* copyString(const char* chars, int length) {
 				case 'n':
 					*c = '\n';
 					sanitizedLength--;
+					c++;
 					break;
 				case 't':
 					*c = '\t';
 					sanitizedLength--;
+					c++;
 					break;
 				case '"':
 					*c = '"';
 					sanitizedLength--;
+					c++;
 					break;
 				case 'b':
 					*c = '\b';
 					sanitizedLength--;
+					c++;
 					break;
 				case '\\':
 					*c = '\\';
 					sanitizedLength--;
+					c++;
 					break;
 				default:
 					break;
@@ -70,9 +99,15 @@ ObjString* copyString(const char* chars, int length) {
 			offset++;
 		}
 	}
+
+	// Check if the string is interned before allocating a new object
 	heapChars[sanitizedLength] = '\0';
 
-	return allocateString(heapChars, sanitizedLength);
+	ObjString* interned = tableFindString(&vm.strings, heapChars, sanitizedLength, hash);
+
+	if (interned != nullptr) return interned;
+
+	return allocateString(heapChars, sanitizedLength, hash);
 }
 
 void printObject(Value value, bool printStringEscapedChars) {
