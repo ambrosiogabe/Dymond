@@ -3,7 +3,8 @@
 #include "common.h"
 #include "value.h"
 
-typedef enum {
+typedef enum
+{
 	OP_CONSTANT,
 	OP_CONSTANT_LONG,
 	OP_NULL,
@@ -23,13 +24,15 @@ typedef enum {
 	OP_RETURN,
 } OpCode;
 
-typedef struct {
+typedef struct
+{
 	int line;
 	uint8_t numInstructions;
 } LineEncoding;
 
 // The Chunk is a dynamic array of bytes
-typedef struct {
+typedef struct
+{
 	int count;
 	int capacity;
 	uint8_t* code;

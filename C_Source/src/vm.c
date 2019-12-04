@@ -11,11 +11,13 @@
 
 VM vm;
 
-static void resetStack() {
+static void resetStack()
+{
 	vm.sp = vm.stack;
 }
 
-static void runtimeError(const char* format, ...) {
+static void runtimeError(const char* format, ...)
+{
 	va_list args;
 	va_start(args, format);
 	vfprintf(stderr, format, args);
@@ -29,43 +31,52 @@ static void runtimeError(const char* format, ...) {
 	resetStack();
 }
 
-void initVM() {
+void initVM()
+{
 	resetStack();
 	vm.objects = nullptr;
 	initTable(&vm.strings);
 }
 
-void freeVM() {
+void freeVM()
+{
 	freeTable(&vm.strings);
 	freeObjects();
 }
 
-void push(Value value) {
-	if (vm.sp - vm.stack > STACK_MAX) {
+void push(Value value)
+{
+	if (vm.sp - vm.stack > STACK_MAX)
+	{
 		printf("STACK OVERFLOW ");
 		printf("%d ", (int)(vm.sp - vm.stack));
 		printf("%d \n", STACK_MAX);
 	}
-	else {
+	else
+	{
 		*vm.sp = value;
 		vm.sp++;
 	}
 }
 
-Value pop() {
+Value pop()
+{
 	vm.sp--;
 	return *vm.sp;
 }
 
-static Value peek(int distance) {
+static Value peek(int distance)
+{
 	return vm.sp[-1 - distance];
 }
 
-static bool isFalsey(Value value) {
+static bool isFalsey(Value value)
+{
 	return IS_NULL(value) || (IS_BOOL(value) && !AS_BOOL(value));
 }
 
-static void concatenate() {
+static void concatenate()
+{
 	ObjString* b = AS_STRING(pop());
 	ObjString* a = AS_STRING(pop());
 
@@ -79,11 +90,13 @@ static void concatenate() {
 	push(OBJ_VAL(result));
 }
 
-InterpretResult interpret(const char* source) {
+InterpretResult interpret(const char* source)
+{
 	Chunk chunk;
 	initChunk(&chunk);
 
-	if (!compile(source, &chunk)) {
+	if (!compile(source, &chunk))
+	{
 		freeChunk(&chunk);
 		return INTERPRET_COMPILE_ERROR;
 	}
@@ -97,7 +110,8 @@ InterpretResult interpret(const char* source) {
 	return result;
 }
 
-static InterpretResult run() {
+static InterpretResult run()
+{
 #define READ_BYTE() (*vm.ip++)
 #define READ_CONSTANT() (vm.chunk->constants.values[READ_BYTE()])
 #define READ_CONSTANT_LONG() (vm.chunk->constants.values[(READ_BYTE() << 8) + READ_BYTE()])
@@ -114,10 +128,12 @@ static InterpretResult run() {
 		push(valueType(a op b)); \
 	} while (false) 
 
-	for (;;) {
+	for (;;)
+	{
 #ifdef DEBUG_TRACE_EXECUTION
 		printf("          ");
-		for (Value* slot = vm.stack; slot < vm.sp; slot++) {
+		for (Value* slot = vm.stack; slot < vm.sp; slot++)
+		{
 			printf("[");
 			printValue(*slot);
 			printf("]");
@@ -127,82 +143,89 @@ static InterpretResult run() {
 #endif 
 
 		uint8_t instruction;
-		switch (instruction = READ_BYTE()) {
-			case OP_CONSTANT: {
-				Value constant = READ_CONSTANT();
-				push(constant);
-				break;
+		switch (instruction = READ_BYTE())
+		{
+		case OP_CONSTANT: {
+			Value constant = READ_CONSTANT();
+			push(constant);
+			break;
+		}
+		case OP_CONSTANT_LONG: {
+			Value constant = READ_CONSTANT_LONG();
+			push(constant);
+			break;
+		}
+		case OP_NULL: push(NULL_VAL); break;
+		case OP_TRUE: push(BOOL_VAL(true)); break;
+		case OP_FALSE: push(BOOL_VAL(false)); break;
+		case OP_EQUAL: {
+			Value b = pop();
+			Value a = pop();
+			push(BOOL_VAL(valuesEqual(a, b)));
+			break;
+		}
+		case OP_INT_DIVIDE: {
+			if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1)))
+			{
+				runtimeError("Operands must be numbers.");
+				return INTERPRET_RUNTIME_ERROR;
 			}
-			case OP_CONSTANT_LONG: {
-				Value constant = READ_CONSTANT_LONG();
-				push(constant);
-				break;
-			}
-			case OP_NULL: push(NULL_VAL); break;
-			case OP_TRUE: push(BOOL_VAL(true)); break;
-			case OP_FALSE: push(BOOL_VAL(false)); break;
-			case OP_EQUAL: {
-				Value b = pop();
-				Value a = pop();
-				push(BOOL_VAL(valuesEqual(a, b)));
-				break;
-			}
-			case OP_INT_DIVIDE: {
-				if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) {
-					runtimeError("Operands must be numbers.");
-					return INTERPRET_RUNTIME_ERROR;
-				}
 
-				int b = AS_NUMBER(pop());
-				int a = AS_NUMBER(pop());
-				push(NUMBER_VAL(a / b));
-				break;
+			int b = AS_NUMBER(pop());
+			int a = AS_NUMBER(pop());
+			push(NUMBER_VAL(a / b));
+			break;
+		}
+		case OP_MODULO: {
+			if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1)))
+			{
+				runtimeError("Operands must be numbers.");
+				return INTERPRET_RUNTIME_ERROR;
 			}
-			case OP_MODULO: {
-				if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) {
-					runtimeError("Operands must be numbers.");
-					return INTERPRET_RUNTIME_ERROR;
-				}
 
-				int b = AS_NUMBER(pop());
-				int a = AS_NUMBER(pop());
-				push(NUMBER_VAL(a % b));
-				break;
+			int b = AS_NUMBER(pop());
+			int a = AS_NUMBER(pop());
+			push(NUMBER_VAL(a % b));
+			break;
+		}
+		case OP_ADD: {
+			if (IS_STRING(peek(0)) && IS_STRING(peek(1)))
+			{
+				concatenate();
 			}
-			case OP_ADD: {
-				if (IS_STRING(peek(0)) && IS_STRING(peek(1))) {
-					concatenate();
-				}
-				else if (IS_NUMBER(peek(0)) && IS_NUMBER(peek(1))) {
-					BINARY_OP(NUMBER_VAL, +); 
-				}
-				else {
-					runtimeError("Operands must be two numbers or two strings.");
-					return INTERPRET_RUNTIME_ERROR;
-				}
-				break;
+			else if (IS_NUMBER(peek(0)) && IS_NUMBER(peek(1)))
+			{
+				BINARY_OP(NUMBER_VAL, +);
 			}
-			case OP_SUBTRACT:    BINARY_OP(NUMBER_VAL, -); break;
-			case OP_MULTIPLY:    BINARY_OP(NUMBER_VAL, *); break;
-			case OP_DIVIDE:      BINARY_OP(NUMBER_VAL, /); break;
-			case OP_GREATER:     BINARY_OP(BOOL_VAL, > ); break;
-			case OP_LESS:        BINARY_OP(BOOL_VAL, < ); break;
-			case OP_NEGATE:    
-				if (!IS_NUMBER(peek(0))) {
-					runtimeError("Operand must be a number.");
-					return INTERPRET_RUNTIME_ERROR;
-				}
+			else
+			{
+				runtimeError("Operands must be two numbers or two strings.");
+				return INTERPRET_RUNTIME_ERROR;
+			}
+			break;
+		}
+		case OP_SUBTRACT:    BINARY_OP(NUMBER_VAL, -); break;
+		case OP_MULTIPLY:    BINARY_OP(NUMBER_VAL, *); break;
+		case OP_DIVIDE:      BINARY_OP(NUMBER_VAL, / ); break;
+		case OP_GREATER:     BINARY_OP(BOOL_VAL, > ); break;
+		case OP_LESS:        BINARY_OP(BOOL_VAL, < ); break;
+		case OP_NEGATE:
+			if (!IS_NUMBER(peek(0)))
+			{
+				runtimeError("Operand must be a number.");
+				return INTERPRET_RUNTIME_ERROR;
+			}
 
-				push(NUMBER_VAL(-AS_NUMBER(pop()))); 
-				break;
-			case OP_NOT:
-				push(BOOL_VAL(isFalsey(pop())));
-				break;
-			case OP_RETURN: {
-				printValue(pop(), false);
-				printf("\n");
-				return INTERPRET_OK;
-			}
+			push(NUMBER_VAL(-AS_NUMBER(pop())));
+			break;
+		case OP_NOT:
+			push(BOOL_VAL(isFalsey(pop())));
+			break;
+		case OP_RETURN: {
+			printValue(pop(), false);
+			printf("\n");
+			return INTERPRET_OK;
+		}
 		}
 	}
 
