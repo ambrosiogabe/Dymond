@@ -64,6 +64,16 @@ bool tableGet(Table* table, ObjString* key, Value* value)
 	return true;
 }
 
+bool tableContains(Table* table, ObjString* key)
+{
+	if (table->count == 0) return false;
+
+	Entry* entry = findEntry(table->entries, table->capacity, key);
+	if (entry->key == nullptr) return false;
+
+	return true;
+}
+
 static void adjustCapacity(Table* table, int capacity)
 {
 	Entry* entries = ALLOCATE(Entry, capacity);

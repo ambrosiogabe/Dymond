@@ -1,8 +1,10 @@
 #pragma once
 
 #define nullptr NULL
-#define DEBUG_PRINT_CODE
-//#define DEBUG_TRACE_EXECUTION
+#ifndef DYMOND_RELEASE
+	#define DEBUG_PRINT_CODE
+	//#define DEBUG_TRACE_EXECUTION
+#endif
 
 #include <stdbool.h>
 #include <stddef.h>

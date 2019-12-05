@@ -143,7 +143,6 @@ static void skipWhitespace()
 
 static TokenType checkKeyword(int start, int length, const char* rest, TokenType type)
 {
-	printf(rest);
 	if ((int)(scanner.current - scanner.start) == (start + length) && memcmp(scanner.start + start, rest, length) == 0)
 	{
 		return type;
@@ -165,7 +164,8 @@ static TokenType identifierType()
 	case 'r': return checkKeyword(1, 5, "eturn", TOKEN_RETURN);
 	case 'v': return checkKeyword(1, 2, "ar", TOKEN_VAR);
 	case 'w': return checkKeyword(1, 4, "hile", TOKEN_WHILE);
-	case 's':
+	case 's': return checkKeyword(1, 4, "uper", TOKEN_SUPER);
+	case 'p': return checkKeyword(1, 4, "rint", TOKEN_PRINT);
 	case 'n':
 		if (scanner.current - scanner.start > 1)
 		{

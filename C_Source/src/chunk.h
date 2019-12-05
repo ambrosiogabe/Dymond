@@ -10,6 +10,7 @@ typedef enum
 	OP_NULL,
 	OP_TRUE,
 	OP_FALSE,
+	OP_POP,
 	OP_EQUAL,
 	OP_GREATER,
 	OP_LESS,
@@ -21,6 +22,13 @@ typedef enum
 	OP_NEGATE,
 	OP_INT_DIVIDE,
 	OP_MODULO,
+	OP_PRINT,
+	OP_DEFINE_GLOBAL,
+	OP_DEFINE_GLOBAL_LONG,
+	OP_GET_GLOBAL,
+	OP_GET_GLOBAL_LONG,
+	OP_SET_GLOBAL,
+	OP_SET_GLOBAL_LONG,
 	OP_RETURN,
 } OpCode;
 
@@ -44,7 +52,7 @@ typedef struct
 
 void initChunk(Chunk* chunk);
 void writeChunk(Chunk* chunk, uint8_t byte, int line);
-bool writeConstant(Chunk* chunk, Value value, int line);
+int writeConstant(Chunk* chunk, Value value, int line);
 int addConstant(Chunk* chunk, Value value);
 int getLine(Chunk* chunk, int instructionNumber);
 int hasLine(Chunk* chunk, int line);

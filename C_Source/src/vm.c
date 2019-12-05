@@ -35,11 +35,13 @@ void initVM()
 {
 	resetStack();
 	vm.objects = nullptr;
+	initTable(&vm.globals);
 	initTable(&vm.strings);
 }
 
 void freeVM()
 {
+	freeTable(&vm.globals);
 	freeTable(&vm.strings);
 	freeObjects();
 }
@@ -114,7 +116,7 @@ static InterpretResult run()
 {
 #define READ_BYTE() (*vm.ip++)
 #define READ_CONSTANT() (vm.chunk->constants.values[READ_BYTE()])
-#define READ_CONSTANT_LONG() (vm.chunk->constants.values[(READ_BYTE() << 8) + READ_BYTE()])
+#define READ_STRING() AS_STRING(READ_CONSTANT())
 
 #define BINARY_OP(valueType, op) \
 	do { \
@@ -135,7 +137,7 @@ static InterpretResult run()
 		for (Value* slot = vm.stack; slot < vm.sp; slot++)
 		{
 			printf("[");
-			printValue(*slot);
+			printValue(*slot, true);
 			printf("]");
 		}
 		printf("\n");
@@ -145,91 +147,172 @@ static InterpretResult run()
 		uint8_t instruction;
 		switch (instruction = READ_BYTE())
 		{
-		case OP_CONSTANT: {
-			Value constant = READ_CONSTANT();
-			push(constant);
-			break;
-		}
-		case OP_CONSTANT_LONG: {
-			Value constant = READ_CONSTANT_LONG();
-			push(constant);
-			break;
-		}
-		case OP_NULL: push(NULL_VAL); break;
-		case OP_TRUE: push(BOOL_VAL(true)); break;
-		case OP_FALSE: push(BOOL_VAL(false)); break;
-		case OP_EQUAL: {
-			Value b = pop();
-			Value a = pop();
-			push(BOOL_VAL(valuesEqual(a, b)));
-			break;
-		}
-		case OP_INT_DIVIDE: {
-			if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1)))
-			{
-				runtimeError("Operands must be numbers.");
-				return INTERPRET_RUNTIME_ERROR;
+			case OP_CONSTANT: {
+				Value constant = READ_CONSTANT();
+				push(constant);
+				break;
 			}
+			case OP_CONSTANT_LONG: {
+				uint8_t upperHalf = READ_BYTE();
+				uint8_t lowerHalf = READ_BYTE();
+				int num = (upperHalf << 8) + lowerHalf;
+				Value constant = vm.chunk->constants.values[num];
+				push(constant);
+				break;
+			}
+			case OP_NULL: push(NULL_VAL); break;
+			case OP_TRUE: push(BOOL_VAL(true)); break;
+			case OP_FALSE: push(BOOL_VAL(false)); break;
+			case OP_POP: pop(); break;
+			case OP_SET_GLOBAL: {
+				ObjString* name = READ_STRING();
+				if (tableSet(&vm.globals, name, peek(0)))
+				{
+					tableDelete(&vm.globals, name);
+					runtimeError("Undefined variable '%s'", name->chars);
+					return INTERPRET_RUNTIME_ERROR;
+				}
+				break;
+			}
+			case OP_SET_GLOBAL_LONG: {
+				uint8_t upperHalf = READ_BYTE();
+				uint8_t lowerHalf = READ_BYTE();
+				ObjString* name = AS_STRING(vm.chunk->constants.values[((upperHalf << 8) + lowerHalf)]);
+				if (tableSet(&vm.globals, name, peek(0)))
+				{
+					tableDelete(&vm.globals, name);
+					runtimeError("Undefined variable '%s'", name->chars);
+					return INTERPRET_RUNTIME_ERROR;
+				}
+				break;
+			}
+			case OP_GET_GLOBAL: {
+				ObjString* name = READ_STRING();
+				Value value;
+				if (!tableGet(&vm.globals, name, &value))
+				{
+					runtimeError("Undefined variable '%s'.", name->chars);
+					return INTERPRET_RUNTIME_ERROR;
+				}
+				push(value);
+				break;
+			}
+			case OP_GET_GLOBAL_LONG: {
+				uint8_t upperHalf = READ_BYTE();
+				uint8_t lowerHalf = READ_BYTE();
+				printf("Number: %02x%02x\n", upperHalf, lowerHalf);
+				ObjString* name = AS_STRING(vm.chunk->constants.values[((upperHalf << 8) + lowerHalf)]);
+				Value value;
+				if (!tableGet(&vm.globals, name, &value))
+				{
+					runtimeError("Undefined variable '%s'.", name->chars);
+					return INTERPRET_RUNTIME_ERROR;
+				}
+				push(value);
+				break;
+			}
+			case OP_DEFINE_GLOBAL: {
+				ObjString* name = READ_STRING();
+				if (tableContains(&vm.globals, name))
+				{
+					runtimeError("Redefinition of global variable '%s'", name->chars);
+					return INTERPRET_RUNTIME_ERROR;
+				}
+				tableSet(&vm.globals, name, peek(0));
+				pop();
+				break;
+			}
+			case OP_DEFINE_GLOBAL_LONG: {
+				uint8_t upperHalf = READ_BYTE();
+				uint8_t lowerHalf = READ_BYTE();
+				ObjString* name = AS_STRING(vm.chunk->constants.values[((upperHalf << 8) + lowerHalf)]);
 
-			int b = AS_NUMBER(pop());
-			int a = AS_NUMBER(pop());
-			push(NUMBER_VAL(a / b));
-			break;
-		}
-		case OP_MODULO: {
-			if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1)))
-			{
-				runtimeError("Operands must be numbers.");
-				return INTERPRET_RUNTIME_ERROR;
+				if (tableContains(&vm.globals, name))
+				{
+					runtimeError("Redefinition of global variable '%s'", name->chars);
+					return INTERPRET_RUNTIME_ERROR;
+				}
+				tableSet(&vm.globals, name, peek(0));
+				pop();
+				break;
 			}
+			case OP_EQUAL: {
+				Value b = pop();
+				Value a = pop();
+				push(BOOL_VAL(valuesEqual(a, b)));
+				break;
+			}
+			case OP_INT_DIVIDE: {
+				if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1)))
+				{
+					runtimeError("Operands must be numbers.");
+					return INTERPRET_RUNTIME_ERROR;
+				}
 
-			int b = AS_NUMBER(pop());
-			int a = AS_NUMBER(pop());
-			push(NUMBER_VAL(a % b));
-			break;
-		}
-		case OP_ADD: {
-			if (IS_STRING(peek(0)) && IS_STRING(peek(1)))
-			{
-				concatenate();
+				int b = AS_NUMBER(pop());
+				int a = AS_NUMBER(pop());
+				push(NUMBER_VAL(a / b));
+				break;
 			}
-			else if (IS_NUMBER(peek(0)) && IS_NUMBER(peek(1)))
-			{
-				BINARY_OP(NUMBER_VAL, +);
-			}
-			else
-			{
-				runtimeError("Operands must be two numbers or two strings.");
-				return INTERPRET_RUNTIME_ERROR;
-			}
-			break;
-		}
-		case OP_SUBTRACT:    BINARY_OP(NUMBER_VAL, -); break;
-		case OP_MULTIPLY:    BINARY_OP(NUMBER_VAL, *); break;
-		case OP_DIVIDE:      BINARY_OP(NUMBER_VAL, / ); break;
-		case OP_GREATER:     BINARY_OP(BOOL_VAL, > ); break;
-		case OP_LESS:        BINARY_OP(BOOL_VAL, < ); break;
-		case OP_NEGATE:
-			if (!IS_NUMBER(peek(0)))
-			{
-				runtimeError("Operand must be a number.");
-				return INTERPRET_RUNTIME_ERROR;
-			}
+			case OP_MODULO: {
+				if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1)))
+				{
+					runtimeError("Operands must be numbers.");
+					return INTERPRET_RUNTIME_ERROR;
+				}
 
-			push(NUMBER_VAL(-AS_NUMBER(pop())));
-			break;
-		case OP_NOT:
-			push(BOOL_VAL(isFalsey(pop())));
-			break;
-		case OP_RETURN: {
-			printValue(pop(), false);
-			printf("\n");
-			return INTERPRET_OK;
-		}
+				int b = AS_NUMBER(pop());
+				int a = AS_NUMBER(pop());
+				push(NUMBER_VAL(a % b));
+				break;
+			}
+			case OP_ADD: {
+				if (IS_STRING(peek(0)) && IS_STRING(peek(1)))
+				{
+					concatenate();
+				}
+				else if (IS_NUMBER(peek(0)) && IS_NUMBER(peek(1)))
+				{
+					BINARY_OP(NUMBER_VAL, +);
+				}
+				else
+				{
+					runtimeError("Operands must be two numbers or two strings.");
+					return INTERPRET_RUNTIME_ERROR;
+				}
+				break;
+			}
+			case OP_SUBTRACT:    BINARY_OP(NUMBER_VAL, -); break;
+			case OP_MULTIPLY:    BINARY_OP(NUMBER_VAL, *); break;
+			case OP_DIVIDE:      BINARY_OP(NUMBER_VAL, / ); break;
+			case OP_GREATER:     BINARY_OP(BOOL_VAL, > ); break;
+			case OP_LESS:        BINARY_OP(BOOL_VAL, < ); break;
+			case OP_NEGATE:
+				if (!IS_NUMBER(peek(0)))
+				{
+					runtimeError("Operand must be a number.");
+					return INTERPRET_RUNTIME_ERROR;
+				}
+
+				push(NUMBER_VAL(-AS_NUMBER(pop())));
+				break;
+			case OP_NOT:
+				push(BOOL_VAL(isFalsey(pop())));
+				break;
+			case OP_PRINT: {
+				printValue(pop(), false);
+				printf("\n");
+				break;
+			}
+			case OP_RETURN: {
+				// Exit interpreter
+				return INTERPRET_OK;
+			}
 		}
 	}
 
 #undef READ_BYTE
 #undef READ_CONSTANT
+#undef READ_STRING
 #undef BINARY_OP
 }
