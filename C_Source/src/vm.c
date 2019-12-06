@@ -25,7 +25,7 @@ static void runtimeError(const char* format, ...)
 	fputs("\n", stderr);
 
 	size_t instruction = vm.ip - vm.chunk->code;
-	int line = getLine(&vm.chunk, instruction);
+	int line = getLine(vm.chunk, instruction);
 	fprintf(stderr, "[line %d] in script\n", line);
 
 	resetStack();
@@ -130,6 +130,9 @@ static InterpretResult run()
 		push(valueType(a op b)); \
 	} while (false) 
 
+	// ==============================================
+	// BEGIN VM LOOP
+	// ==============================================
 	for (;;)
 	{
 #ifdef DEBUG_TRACE_EXECUTION
@@ -164,6 +167,16 @@ static InterpretResult run()
 			case OP_TRUE: push(BOOL_VAL(true)); break;
 			case OP_FALSE: push(BOOL_VAL(false)); break;
 			case OP_POP: pop(); break;
+			case OP_GET_LOCAL: {
+				uint8_t slot = READ_BYTE();
+				push(vm.stack[slot]);
+				break;
+			}
+			case OP_SET_LOCAL: {
+				uint8_t slot = READ_BYTE();
+				vm.stack[slot] = peek(0);
+				break;
+			}
 			case OP_SET_GLOBAL: {
 				ObjString* name = READ_STRING();
 				if (tableSet(&vm.globals, name, peek(0)))

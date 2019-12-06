@@ -1,0 +1,11 @@
+var a = 10;
+{
+	var b = a * 3;
+	{
+		var c;
+		c = 10;
+		print c;
+	}
+	print b;
+}
+print a;

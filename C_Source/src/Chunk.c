@@ -84,13 +84,20 @@ int addConstant(Chunk* chunk, Value value)
 
 int getLine(Chunk* chunk, int offset)
 {
-	for (int i = 0; i < chunk->lineCount; i++)
+	if (chunk->lineEncoding != nullptr)
 	{
-		offset -= chunk->lineEncoding[i].numInstructions;
-		if (offset < 0)
+		for (int i = 0; i < chunk->lineCount; i++)
 		{
-			return chunk->lineEncoding[i].line;
+			offset -= chunk->lineEncoding[i].numInstructions;
+			if (offset < 0)
+			{
+				return chunk->lineEncoding[i].line;
+			}
 		}
+	}
+	else
+	{
+		printf("VM ERROR: Line encoding has not been initialized.\n");
 	}
 	return -1;
 }
@@ -113,4 +120,5 @@ void freeChunk(Chunk* chunk)
 	FREE_ARRAY(LineEncoding, chunk->lineEncoding, chunk->lineCapacity);
 	freeValueArray(&chunk->constants);
 	initChunk(chunk);
+	chunk = nullptr;
 }
